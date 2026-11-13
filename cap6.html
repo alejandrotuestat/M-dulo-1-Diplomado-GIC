@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación Capítulo 6 · Módulo 1 DGIC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.logo{display:inline-block;background:#C00000;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:12px;letter-spacing:.05em}
+.pb{height:5px;background:#E0E0E0;border-radius:3px;margin-bottom:1.5rem}
+.pf{height:5px;background:#185FA5;border-radius:3px;transition:width .3s}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.qnum{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:#1A1A1A}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid #E0E0E0;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;line-height:1.45;color:#1A1A1A;transition:border-color .15s,background .15s}
+.opt:hover{background:#F0F7FF;border-color:#185FA5}
+.opt.correct{border-color:#3B6D11;background:#EAF3DE;color:#27500A}
+.opt.wrong{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #CCC;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.opt.correct .dot{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.opt.wrong .dot{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.fb{font-size:13px;padding:10px 12px;border-radius:8px;margin-top:10px;line-height:1.55;display:none}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#1E4D08;border:1px solid #7BBF5A}
+.fb.ko{background:#FCEBEB;color:#791F1F;border:1px solid #E08080}
+.btn-next{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#185FA5;color:#fff;border:none;font-size:15px;font-weight:500;cursor:pointer;display:none}
+.btn-next.show{display:block}
+.btn-result{width:100%;padding:14px;margin-top:1.5rem;border-radius:8px;background:#C00000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;display:none}
+.btn-result.show{display:block}
+.result{display:none;text-align:center;padding:.5rem 0}
+.result.show{display:block}
+.gauge-wrap{position:relative;width:220px;height:120px;margin:0 auto 1rem}
+canvas{display:block}
+.gauge-pct{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#1A1A1A}
+.result-label{font-size:18px;font-weight:600;margin-bottom:6px}
+.result-sub{font-size:14px;color:#555;margin-bottom:1.5rem;line-height:1.5}
+.ri{text-align:left;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ri-q{font-weight:500;margin-bottom:4px;line-height:1.4;color:#1A1A1A}
+.rok{color:#27500A;font-weight:500}.rko{color:#791F1F;font-weight:500}
+.btn-retry{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#fff;color:#1A1A1A;border:1.5px solid #CCC;font-size:14px;cursor:pointer}
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#AAA}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <div class="logo">DGIC · MÓDULO 1</div>
+  <h1>Autoevaluación · Capítulo 6</h1>
+  <p>Los procesos y su gestión · 16 preguntas</p>
+</div>
+<div class="pb"><div class="pf" id="prog" style="width:0%"></div></div>
+<div id="qbody"></div>
+<button class="btn-result" id="btnr">Ver mi resultado</button>
+<div class="result" id="reswrap">
+  <div class="gauge-wrap"><canvas id="gauge" width="220" height="120"></canvas><div class="gauge-pct" id="gpct"></div></div>
+  <div class="result-label" id="rlabel"></div>
+  <div class="result-sub" id="rsub"></div>
+  <div id="review"></div>
+  <button class="btn-retry" onclick="restart()">Intentar de nuevo</button>
+</div>
+<div class="footer">Diploma en Gestión Integrada de Calidad, Seguridad y Medio Ambiente · FEN · Universidad de Chile</div>
+</div>
+<script>
+const Qs=[
+{
+"q": "En la cadena de valor de Porter (1985), ¿qué distingue a los procesos primarios de los de apoyo?",
+"opts": [
+"Los primarios los dirige la alta dirección y los de apoyo, los mandos medios.",
+"Los primarios generan ingresos y los de apoyo son costos que conviene reducir.",
+"Los primarios llegan al cliente; los de apoyo los sostienen y respaldan.",
+"Los primarios son de manufactura y los de apoyo, de servicios administrativos."
+],
+"ans": 2,
+"fb": "Porter (1985) ordena las actividades en procesos primarios, directamente relacionados con lo que se entrega al cliente o usuario, y procesos de apoyo, que los asisten y respaldan. La diferencia no es jerárquica ni sectorial: un servicio público también tiene procesos primarios. Tratar los de apoyo como meros costos es un error frecuente, porque de ellos depende que los primarios funcionen."
+},
+{
+"q": "En un hospital, ¿cómo se clasifica la gestión de las personas dentro de la cadena de valor?",
+"opts": [
+"Como proceso de apoyo, que sostiene a los procesos que atienden al paciente.",
+"Como proceso primario, porque sin médicos ni enfermeras no hay atención.",
+"Como proceso externo, porque depende de proveedores de selección y formación.",
+"Como parte de la estrategia, porque define la cultura y no es un proceso."
+],
+"ans": 0,
+"fb": "En la cadena de valor la gestión de las personas es un proceso de apoyo: no atiende directamente al paciente, pero hace posible que los procesos primarios lo hagan. Que los médicos sean indispensables no convierte a su selección o formación en proceso primario; lo primario es la atención. Contratar servicios externos no cambia la naturaleza del proceso, y la gestión de personas sí es un proceso que se gestiona y se mide."
+},
+{
+"q": "Una organización fija el objetivo social de cero accidentes graves. Según el curso, ¿cómo se baja ese objetivo con la cadena de valor?",
+"opts": [
+"Se asigna al área de prevención, que lo mide con el número de capacitaciones dictadas.",
+"Se mantiene como objetivo corporativo, sin asignarlo a un proceso en particular.",
+"Se mide con el porcentaje de entregas a tiempo, que refleja la calidad operativa.",
+"Se asigna a operaciones y se mide con la tasa de accidentes con tiempo perdido."
+],
+"ans": 3,
+"fb": "El curso muestra que la cadena de valor baja cada objetivo a un proceso y a un indicador: el objetivo de cero accidentes graves se asigna a operaciones, donde ocurre el riesgo, y se mide con la tasa de accidentes con tiempo perdido. Contar capacitaciones mide una actividad, no el resultado. Un objetivo que no llega a un proceso no tiene quien lo gestione, y las entregas a tiempo corresponden a otro objetivo."
+},
+{
+"q": "Según la síntesis del curso, ¿qué es un proceso?",
+"opts": [
+"Un conjunto de tareas que el organigrama asigna a un mismo departamento de la empresa.",
+"Una secuencia de actividades que convierte entradas en un resultado con valor para un cliente.",
+"Un documento que describe paso a paso la manera de ejecutar una tarea determinada.",
+"Una función de la empresa, como compras, finanzas o ventas, con su propio jefe."
+],
+"ans": 1,
+"fb": "El curso sintetiza las definiciones de Hammer y Champy (1993) y de EFQM (2020): un proceso es una secuencia lógica de actividades que, a partir de entradas, genera un resultado para clientes identificados y va agregando valor. Un proceso suele cruzar varios departamentos, por eso no coincide con el organigrama ni con una función. El documento que describe los pasos es un procedimiento, que forma parte del control del proceso."
+},
+{
+"q": "¿Quién es el dueño de un proceso, según el curso?",
+"opts": [
+"Quien ejecuta la mayor parte de las actividades que componen el proceso.",
+"La persona o cargo que vela por la gestión y la mejora continua del proceso.",
+"El cliente que recibe la salida del proceso y evalúa si cumple lo esperado.",
+"El gerente del área donde trabaja la mayoría de los intervinientes del proceso."
+],
+"ans": 1,
+"fb": "El dueño del proceso es la persona o cargo nominal que vela por su gestión y su mejora continua. Quienes ejecutan las actividades son los intervinientes, y quien recibe la salida es el cliente. El dueño no tiene por qué ser el jefe del área con más intervinientes: un proceso suele cruzar áreas, y lo que importa es que alguien responda por su desempeño completo."
+},
+{
+"q": "En un proceso de fabricación, ¿qué distingue a las entradas de los recursos?",
+"opts": [
+"Las entradas son tangibles y los recursos, intangibles como la información.",
+"Las entradas las aporta el cliente y los recursos los aporta el proveedor.",
+"Las entradas se transforman en el proceso; los recursos, no.",
+"Las entradas se miden con indicadores y los recursos, con el presupuesto."
+],
+"ans": 2,
+"fb": "El curso define las entradas como lo que aporta el proveedor y se transforma durante el proceso, y pueden ser tangibles, como materias primas, o intangibles, como datos. Los recursos, en cambio, como personal, equipos, software o documentos, hacen posible el proceso pero no se transforman en él. Ni la tangibilidad ni quién los aporta ni la forma de medirlos es lo que los distingue."
+},
+{
+"q": "¿Qué relación existe entre un proceso y un procedimiento?",
+"opts": [
+"Son sinónimos, y en un sistema de gestión pueden usarse de manera indistinta.",
+"El proceso es el documento y el procedimiento es la actividad que se describe.",
+"El procedimiento agrupa varios procesos relacionados dentro de un macroproceso.",
+"El procedimiento fija pasos de ejecución y es parte del control del proceso."
+],
+"ans": 3,
+"fb": "El curso define el procedimiento como la manera de ejecutar algo siguiendo pasos predefinidos, por ejemplo un procedimiento de emergencias, y lo ubica dentro del sistema de control del proceso. El proceso es la secuencia de actividades que transforma entradas en resultados; el procedimiento describe cómo realizar una parte de ella. Confundirlos lleva a creer que documentar es gestionar procesos."
+},
+{
+"q": "El área de mantenimiento entrega equipos reparados a producción. ¿Qué rol cumple producción respecto de la salida de ese proceso?",
+"opts": [
+"Es un cliente interno, destinatario de la salida de mantenimiento.",
+"Es un proveedor interno, porque entrega los equipos que mantenimiento repara.",
+"Es un interviniente, porque participa en las actividades de mantenimiento.",
+"Es el dueño del proceso, porque es el área que usa los equipos reparados."
+],
+"ans": 0,
+"fb": "Los clientes son los destinatarios del resultado del proceso y pueden ser internos o externos. Respecto de la salida, los equipos reparados, producción es cliente interno, y el proceso de mantenimiento debe orientarse a sus requerimientos. Producción también entrega los equipos dañados, pero eso es una entrada, y la pregunta se refiere a la salida. No participa en las actividades de reparación ni responde por la mejora del proceso de mantenimiento."
+},
+{
+"q": "¿Qué distingue a la gestión por procesos de la gestión de procesos?",
+"opts": [
+"La gestión de procesos dirige toda la organización y la gestión por procesos mejora cada uno.",
+"La gestión por procesos es propia de la manufactura y la de procesos, de los servicios.",
+"Son sinónimos que distintos autores usan para referirse al mismo enfoque de gestión.",
+"La gestión por procesos dirige la organización desde sus procesos; la otra mejora cada uno."
+],
+"ans": 3,
+"fb": "El curso distingue ambos conceptos: la gestión de procesos se ocupa de identificar, analizar y mejorar cada proceso y sus interacciones; la gestión por procesos gestiona toda la empresa o servicio público a partir de ellos, como un modelo de gestión orientado al cliente. Atribuir a la gestión de procesos la dirección de toda la organización invierte los conceptos. Ninguno de los dos está limitado a un tipo de sector."
+},
+{
+"q": "Según Harrington (1993), ¿qué pregunta de fondo guía la mejora de un proceso?",
+"opts": [
+"¿Esta actividad está descrita en un procedimiento escrito?",
+"¿Esta actividad agrega valor al cliente o usuario?",
+"¿Puede ejecutarla una persona de menor calificación?",
+"¿La exige alguna norma o sistema de gestión vigente?"
+],
+"ans": 1,
+"fb": "Harrington (1993) plantea que gestionar procesos es analizarlos y mejorarlos para que entreguen más valor con menos esfuerzo, y la pregunta de fondo es si cada actividad agrega valor al cliente o usuario. Lo que no agrega valor, como burocracia, duplicaciones o tiempos muertos, se elimina. Que la actividad esté documentada o la exija una norma no dice si agrega valor, y reducir la calificación es una decisión de costo, no un criterio de valor."
+},
+{
+"q": "En la metodología del curso para la gestión de procesos, ¿qué etapa sigue inmediatamente a la identificación de los procesos?",
+"opts": [
+"La selección de los procesos que se van a gestionar primero.",
+"La documentación de los procesos mediante fichas y diagramas.",
+"La descomposición de los procesos en subprocesos y actividades.",
+"El análisis de los procesos para detectar dónde se pierde valor."
+],
+"ans": 0,
+"fb": "La metodología del curso tiene cinco etapas en este orden: identificación, selección, descomposición, documentación y análisis de los procesos. Después de identificar los procesos a partir de la misión, las partes interesadas y los objetivos, se seleccionan los que se van a gestionar, entre ellos los procesos clave y críticos. Descomponer, documentar o analizar sin haber seleccionado dispersa el esfuerzo en procesos de menor impacto."
+},
+{
+"q": "¿Cuál de las siguientes características identifica a un proceso crítico, según el curso?",
+"opts": [
+"Tiene la mayor cantidad de personas asignadas en la organización.",
+"Consume la mayor parte del presupuesto anual de la organización.",
+"Genera incidencias reiteradas o resultados que no satisfacen.",
+"Ocupa el primer lugar en el mapa de procesos de la organización."
+],
+"ans": 2,
+"fb": "El curso caracteriza los procesos críticos por tener un elevado riesgo técnico o depender de personal muy especializado, por presentar resultados que no satisfacen al cliente o por generar incidencias reiteradas u ocasionales conocidas. El número de personas, el presupuesto o la ubicación en el mapa no indican criticidad: un proceso pequeño y barato puede ser crítico si su falla afecta al cliente."
+},
+{
+"q": "Un equipo cumple su meta de producción, pero usa el doble de las horas extra previstas. ¿Cómo se califica su desempeño?",
+"opts": [
+"Eficaz pero no eficiente: logra la meta sin cuidar los recursos.",
+"Efectivo, porque lo que importa es lograr la meta comprometida.",
+"Eficiente pero no eficaz: cuida sus recursos, pero no logra la meta.",
+"Ahorro estéril, porque protege los recursos a costa del resultado."
+],
+"ans": 0,
+"fb": "El curso mide todo proceso con dos preguntas: si logra la meta, que es la eficacia, y con qué recursos, que es la eficiencia. Este equipo logra la meta, pero con recursos muy superiores a los previstos, como matar una mosca a cañonazos. La efectividad exige ambas cosas a la vez. El ahorro estéril es el caso inverso: cuidar los recursos sin lograr la meta."
+},
+{
+"q": "Covey (1989) usa la fábula de la gallina de los huevos de oro para explicar la efectividad. ¿Qué significa efectividad en ese sentido?",
+"opts": [
+"Maximizar la producción del período, aunque se desgaste la capacidad.",
+"Proteger la capacidad productiva, aunque se reduzca la producción.",
+"El equilibrio entre la producción y la capacidad de producir.",
+"Lograr la meta del período con el menor costo posible de recursos."
+],
+"ans": 2,
+"fb": "Covey (1989) compara los huevos de oro con la producción y la gallina con la capacidad de producirlos: la efectividad es el equilibrio entre ambas. Maximizar la producción agotando la capacidad equivale a matar a la gallina, y proteger la capacidad sin producir pierde el resultado. Lograr la meta al menor costo describe eficacia y eficiencia en el período, pero no considera si se conserva la capacidad para los siguientes."
+},
+{
+"q": "Un indicador informa que este mes el 92% de los despachos llegó a tiempo. ¿Qué le falta para poder interpretarlo?",
+"opts": [
+"Una fórmula más compleja, que combine varias variables del proceso.",
+"Un patrón de referencia, como la meta o la línea de base.",
+"Un responsable distinto del dueño del proceso, que lo revise y audite.",
+"Una unidad de medida, porque un porcentaje no expresa una magnitud."
+],
+"ans": 1,
+"fb": "Un indicador compara el resultado con un patrón de referencia: la línea de base, la meta, el comportamiento histórico, el mejor valor logrado o el valor del sector. Sin esa comparación no se sabe si 92% es bueno, malo o una mejora. Una fórmula más compleja no resuelve la falta de referencia, la revisión por otra persona no la reemplaza y el porcentaje sí es una unidad de medida válida."
+},
+{
+"q": "Según el curso, ¿por qué no conviene crear un indicador para cada actividad?",
+"opts": [
+"Porque los indicadores corresponden a los procesos primarios y no a los de apoyo.",
+"Porque un exceso de indicadores dificulta el trabajo de los auditores externos.",
+"Porque las actividades se controlan mejor con la supervisión directa del jefe.",
+"Porque cada indicador tiene costos de diseño, mantención y acciones derivadas."
+],
+"ans": 3,
+"fb": "El curso advierte que medir lo innecesario es un despilfarro: diseñar, crear y mantener un indicador tiene un costo, y ese costo crece con las acciones correctivas que el responsable debe emprender cuando el indicador se desvía. Los procesos de apoyo también se miden, como la ejecución del plan de capacitación. La conveniencia para los auditores no es un criterio, y la supervisión directa no reemplaza la medición de resultados."
+}
+];
+let cur=0,score=0,answered=[];
+function render(){
+  const q=Qs[cur];
+  document.getElementById('prog').style.width=Math.round((cur/Qs.length)*100)+'%';
+  let h=`<div class="card"><div class="qnum">Pregunta ${cur+1} de ${Qs.length}</div><div class="qtext">${q.q}</div>`;
+  q.opts.forEach((o,i)=>{h+=`<div class="opt" id="op${i}" onclick="pick(${i})"><div class="dot" id="dot${i}"></div><span>${o}</span></div>`;});
+  h+=`<div class="fb" id="fb"></div></div>`;
+  document.getElementById('qbody').innerHTML=h;
+  document.getElementById('btnr').style.display='none';
+}
+function pick(i){
+  const q=Qs[cur];
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=null);
+  const ok=i===q.ans;
+  document.getElementById('op'+i).classList.add(ok?'correct':'wrong');
+  document.getElementById('dot'+i).textContent=ok?'✓':'✗';
+  if(!ok){document.getElementById('op'+q.ans).classList.add('correct');document.getElementById('dot'+q.ans).textContent='✓';}
+  const fb=document.getElementById('fb');
+  fb.textContent=q.fb;fb.className='fb show '+(ok?'ok':'ko');
+  if(ok)score++;
+  answered.push({q:q.q,ok});cur++;
+  if(cur<Qs.length){
+    const b=document.createElement('button');b.className='btn-next show';b.textContent='Siguiente →';b.onclick=render;
+    document.querySelector('.card').appendChild(b);
+  } else {document.getElementById('btnr').style.display='block';}
+}
+function showResult(){
+  document.getElementById('qbody').innerHTML='';document.getElementById('btnr').style.display='none';
+  document.getElementById('reswrap').style.display='block';
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('gpct').textContent=pct+'%';drawGauge(pct);
+  let label,sub,color;
+  if(pct>=87){label='Excelente dominio';sub='Comprendes sólidamente los contenidos del capítulo 6.';color='#3B6D11';}
+  else if(pct>=62){label='Buen nivel';sub='Hay algunos conceptos que vale la pena repasar.';color='#BA7517';}
+  else{label='Necesitas repasar';sub='Te recomendamos repasar las láminas del capítulo 6 antes de continuar.';color='#A32D2D';}
+  const rl=document.getElementById('rlabel');rl.textContent=label;rl.style.color=color;
+  document.getElementById('rsub').textContent=sub;
+  document.getElementById('review').innerHTML=answered.map((a,i)=>
+    `<div class="ri"><div class="ri-q">${i+1}. ${a.q}</div><div class="${a.ok?'rok':'rko'}">${a.ok?'✓ Correcta':'✗ Incorrecta'}</div></div>`).join('');
+}
+function drawGauge(pct){
+  const c=document.getElementById('gauge'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,220,120);
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,2*Math.PI);ctx.strokeStyle='#E0E0E0';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+  const color=pct>=87?'#3B6D11':pct>=62?'#BA7517':'#A32D2D';
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,Math.PI+(pct/100)*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+}
+function restart(){cur=0;score=0;answered=[];document.getElementById('reswrap').style.display='none';render();}
+document.getElementById('btnr').onclick=showResult;
+render();
+</script>
+</body>
+</html>
