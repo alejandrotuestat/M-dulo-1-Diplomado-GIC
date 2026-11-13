@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación Capítulo 5 · Módulo 1 DGIC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.logo{display:inline-block;background:#C00000;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:12px;letter-spacing:.05em}
+.pb{height:5px;background:#E0E0E0;border-radius:3px;margin-bottom:1.5rem}
+.pf{height:5px;background:#185FA5;border-radius:3px;transition:width .3s}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.qnum{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:#1A1A1A}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid #E0E0E0;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;line-height:1.45;color:#1A1A1A;transition:border-color .15s,background .15s}
+.opt:hover{background:#F0F7FF;border-color:#185FA5}
+.opt.correct{border-color:#3B6D11;background:#EAF3DE;color:#27500A}
+.opt.wrong{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #CCC;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.opt.correct .dot{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.opt.wrong .dot{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.fb{font-size:13px;padding:10px 12px;border-radius:8px;margin-top:10px;line-height:1.55;display:none}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#1E4D08;border:1px solid #7BBF5A}
+.fb.ko{background:#FCEBEB;color:#791F1F;border:1px solid #E08080}
+.btn-next{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#185FA5;color:#fff;border:none;font-size:15px;font-weight:500;cursor:pointer;display:none}
+.btn-next.show{display:block}
+.btn-result{width:100%;padding:14px;margin-top:1.5rem;border-radius:8px;background:#C00000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;display:none}
+.btn-result.show{display:block}
+.result{display:none;text-align:center;padding:.5rem 0}
+.result.show{display:block}
+.gauge-wrap{position:relative;width:220px;height:120px;margin:0 auto 1rem}
+canvas{display:block}
+.gauge-pct{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#1A1A1A}
+.result-label{font-size:18px;font-weight:600;margin-bottom:6px}
+.result-sub{font-size:14px;color:#555;margin-bottom:1.5rem;line-height:1.5}
+.ri{text-align:left;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ri-q{font-weight:500;margin-bottom:4px;line-height:1.4;color:#1A1A1A}
+.rok{color:#27500A;font-weight:500}.rko{color:#791F1F;font-weight:500}
+.btn-retry{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#fff;color:#1A1A1A;border:1.5px solid #CCC;font-size:14px;cursor:pointer}
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#AAA}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <div class="logo">DGIC · MÓDULO 1</div>
+  <h1>Autoevaluación · Capítulo 5</h1>
+  <p>Estructura organizacional · 12 preguntas</p>
+</div>
+<div class="pb"><div class="pf" id="prog" style="width:0%"></div></div>
+<div id="qbody"></div>
+<button class="btn-result" id="btnr">Ver mi resultado</button>
+<div class="result" id="reswrap">
+  <div class="gauge-wrap"><canvas id="gauge" width="220" height="120"></canvas><div class="gauge-pct" id="gpct"></div></div>
+  <div class="result-label" id="rlabel"></div>
+  <div class="result-sub" id="rsub"></div>
+  <div id="review"></div>
+  <button class="btn-retry" onclick="restart()">Intentar de nuevo</button>
+</div>
+<div class="footer">Diploma en Gestión Integrada de Calidad, Seguridad y Medio Ambiente · FEN · Universidad de Chile</div>
+</div>
+<script>
+const Qs=[
+{
+"q": "Según Chandler (1962) y Galbraith (2014), ¿qué relación existe entre la estrategia y la estructura de una organización?",
+"opts": [
+"La estructura existente define qué estrategias puede elegir la organización.",
+"La estructura se diseña para ejecutar la estrategia, que va primero.",
+"Son independientes: la estrategia la fija la dirección y la estructura cada área.",
+"La estructura es un fin en sí misma, porque ordena la autoridad y el control."
+],
+"ans": 1,
+"fb": "La frase de Chandler (1962), “structure follows strategy”, resume la idea del curso: una vez definida la estrategia, se diseña una estructura que permita implementarla (Galbraith, 2014). La estructura no es un fin, sino una herramienta para ejecutar la visión. Es cierto que una estructura heredada puede limitar la ejecución, pero eso es una razón para rediseñarla, no para que defina la estrategia. Tampoco son independientes: una estructura que no responde a la estrategia la frena."
+},
+{
+"q": "Un analista recibe instrucciones contradictorias de su jefe de área y del gerente de un proyecto. ¿Qué principio de diseño se está vulnerando?",
+"opts": [
+"Unidad de dirección: cada grupo de actividades debe tener un solo plan.",
+"Ángulo de autoridad: el jefe supervisa a más personas de las que puede.",
+"Homogeneidad de tareas: el analista realiza tareas de distinta complejidad.",
+"Unidad de mando: cada persona debe recibir órdenes de un solo superior."
+],
+"ans": 3,
+"fb": "La unidad de mando (Fayol, 1916) establece que cada persona reciba órdenes de un solo superior; con dos jefes que se contradicen, ese principio se rompe. La unidad de dirección (Urwick, 1956) se refiere a que un grupo de actividades con un mismo objetivo tenga un solo jefe y un solo plan, y es un principio cercano pero distinto. El ángulo de autoridad trata del número de subordinados por jefe, y la homogeneidad, de la complejidad de las tareas en un mismo nivel."
+},
+{
+"q": "Un gerente delega en su jefe de planta la investigación de un accidente, y la investigación resulta deficiente. ¿Qué ocurre con la responsabilidad del gerente?",
+"opts": [
+"La conserva: se delegan las tareas, no la responsabilidad.",
+"Pasa por completo al jefe de planta, que aceptó la tarea delegada.",
+"Se reparte en partes iguales entre ambos, según la cadena de mando.",
+"Desaparece si la delegación quedó registrada por escrito y firmada."
+],
+"ans": 0,
+"fb": "El curso establece, como principio derivado de la jerarquía y la autoridad, que las tareas pueden delegarse, pero no la responsabilidad. El jefe de planta responde por cómo ejecutó la tarea, y el gerente sigue respondiendo por el resultado. Delegar no transfiere ni divide la responsabilidad, y dejarlo por escrito documenta la asignación, pero no libera a quien delega."
+},
+{
+"q": "Un técnico sin cargo de jefatura es la persona que el equipo consulta antes de cualquier decisión crítica. Según Barnard (1938) y el curso, ¿qué tipo de autoridad ejerce?",
+"opts": [
+"Autoridad formal, porque sus opiniones terminan aplicándose en la práctica.",
+"Jerarquía, porque el equipo le reconoce un nivel superior de decisión.",
+"Autoridad experta o informal, basada en conocimiento y no en el cargo.",
+"Autoridad delegada, porque la jefatura le cedió parte de sus atribuciones."
+],
+"ans": 2,
+"fb": "El curso distingue la jerarquía, visible en el organigrama, de la autoridad real, que puede no coincidir con la posición formal (Barnard, 1938). La autoridad puede venir del cargo, del conocimiento o de la influencia personal. Este técnico influye por lo que sabe, sin cargo ni delegación formal. Que sus opiniones se apliquen no la vuelve autoridad formal ni lo sitúa en la jerarquía."
+},
+{
+"q": "¿Qué diferencia hay entre la división del trabajo y la especialización, según el curso?",
+"opts": [
+"Son sinónimos: ambas indican que cada persona domina una sola tarea del proceso.",
+"La especialización separa el proceso en tareas; la división las asigna a cada persona.",
+"La división pertenece a la dimensión vertical y la especialización a la horizontal.",
+"La división separa el proceso en tareas; especializar es asignar pocas a cada persona."
+],
+"ans": 3,
+"fb": "La división del trabajo descompone un proceso complejo en tareas elementales; la especialización hace que cada persona realice un número reducido de esas tareas. El curso subraya que no son lo mismo: con un trabajo bien dividido puede haber personas muy especializadas y otras poco especializadas. Decir que la especialización separa el proceso invierte las definiciones, y ambos principios pertenecen a la dimensión horizontal."
+},
+{
+"q": "Un operador con años en el puesto ejecuta la tarea en piloto automático y omite pasos sin darse cuenta. ¿Qué riesgo de la especialización describe el curso con este tipo de casos?",
+"opts": [
+"La incompetencia consciente, porque el operador sabe que no domina la tarea.",
+"La competencia inconsciente, que puede volverse peligrosa (Broadwell, 1969).",
+"La ausencia de factores higiénicos, que según Herzberg desmotiva al operador.",
+"La falta de unidad de mando, porque nadie lo supervisa de manera directa."
+],
+"ans": 1,
+"fb": "El curso usa los cuatro estados del aprendizaje de Broadwell (1969) para advertir que la especialización puede llevar a una competencia inconsciente: la persona domina tanto la tarea que deja de prestar atención y omite pasos sin notarlo. La incompetencia consciente es el estado de quien sabe que aún no domina algo. Los factores de Herzberg explican la satisfacción, no este tipo de error, y la unidad de mando se refiere a tener un solo superior."
+},
+{
+"q": "¿Qué distingue a la departamentalización de la funcionalidad, según el curso?",
+"opts": [
+"La funcionalidad agrupa por productos y la departamentalización por funciones.",
+"La departamentalización crea cuasi empresas con autonomía para decidir.",
+"La departamentalización formaliza la funcionalidad cuando la empresa crece.",
+"La funcionalidad es propia de grandes empresas y la otra, de las pymes."
+],
+"ans": 2,
+"fb": "La funcionalidad agrupa a las personas que realizan actividades homogéneas; a una pyme le basta con agrupar funciones esenciales sin crear departamentos. Cuando la empresa crece, esas agrupaciones se formalizan: la departamentalización es la formalización de la funcionalidad. Las cuasi empresas con autonomía describen la divisionalización. Atribuir la funcionalidad a las grandes empresas invierte la relación con el tamaño."
+},
+{
+"q": "Un hospital coordina el trabajo de sus médicos principalmente a través de la formación que cada profesional trae. Según Mintzberg, ¿qué mecanismo de coordinación predomina?",
+"opts": [
+"La normalización de habilidades, propia de la burocracia profesional.",
+"La normalización de procesos, propia de la burocracia maquinal.",
+"La supervisión directa, propia de la estructura simple y pequeña.",
+"La normalización de resultados, propia de la forma divisional."
+],
+"ans": 0,
+"fb": "Mintzberg asocia cada configuración con un mecanismo de coordinación predominante. En la burocracia profesional, como un hospital o una universidad, el trabajo se coordina mediante la normalización de habilidades: la formación define qué sabe hacer cada profesional. La normalización de procesos predomina en la producción en serie, la supervisión directa en organizaciones pequeñas y la normalización de resultados en las formas divisionales."
+},
+{
+"q": "Una persona coordina el trabajo entre producción y ventas, sin autoridad formal sobre esas áreas y sin dedicación completa. ¿Qué mecanismo de coordinación representa?",
+"opts": [
+"Un grupo interunidad, formado para resolver un problema compartido.",
+"Una función de enlace, que vincula unidades sin autoridad formal sobre ellas.",
+"La supervisión directa, que canaliza la información a través del jefe.",
+"La adaptación mutua, basada en la comunicación informal entre pares."
+],
+"ans": 1,
+"fb": "El curso describe la función de enlace como un mecanismo formal que permite una estrecha coordinación entre unidades, cuyos puestos no suelen tener autoridad formal ni dedicación completa. El grupo interunidad es un equipo o comité que reúne a varias personas en torno a un problema, producto o cliente. La supervisión directa supone autoridad del jefe, y la adaptación mutua es informal y no requiere un puesto designado."
+},
+{
+"q": "Según el curso, ¿qué caracteriza a una organización ágil?",
+"opts": [
+"Una cadena de mando corta, con decisiones concentradas en un gerente general.",
+"Estructuras que crean valor coordinando a participantes externos de un ecosistema.",
+"Unidades funcionales grandes, con procedimientos detallados para cada tarea.",
+"Equipos pequeños, autoorganizados y multifuncionales que iteran con rapidez."
+],
+"ans": 3,
+"fb": "El curso presenta las organizaciones ágiles como equipos pequeños, autoorganizados y multifuncionales que iteran con rapidez, con marcos como Scrum y SAFe (Rigby, Sutherland & Takeuchi, 2016). Concentrar las decisiones en un gerente describe una estructura simple. Coordinar participantes externos corresponde a las organizaciones en red o plataforma. Las unidades funcionales grandes con procedimientos detallados se acercan a la burocracia maquinal."
+},
+{
+"q": "Una empresa mejora los sueldos y las condiciones físicas de trabajo, pero el compromiso del personal no aumenta. Según Herzberg, ¿qué explica este resultado?",
+"opts": [
+"Son factores higiénicos: si faltan generan insatisfacción, pero no motivan.",
+"Son factores motivacionales, cuyo efecto sobre el compromiso tarda años en aparecer.",
+"La mejora fue insuficiente; con aumentos mayores el compromiso habría crecido.",
+"El compromiso depende de la cultura, por lo que la motivación no influye en él."
+],
+"ans": 0,
+"fb": "Herzberg distingue factores higiénicos y motivacionales. Los higiénicos, como el sueldo o las condiciones físicas, provocan insatisfacción cuando faltan, pero su presencia no genera satisfacción: lo contrario de la satisfacción no es la insatisfacción, sino su ausencia. Por eso aumentarlos más no produce compromiso. La cultura influye, pero no anula la motivación; ambas se refuerzan."
+},
+{
+"q": "En una planta, la dirección envía instrucciones, pero no recoge lo que observan los operadores, y circulan rumores. ¿Qué principio derivado de la motivación y la participación está fallando?",
+"opts": [
+"La información, porque los operadores no reciben datos para decidir.",
+"El trabajo en equipo, porque cada área cumple su parte sin mirar el resultado.",
+"La comunicación, que debe circular en ambos sentidos entre las personas.",
+"La dirección participativa, porque no existen objetivos compartidos."
+],
+"ans": 2,
+"fb": "El curso describe cuatro principios derivados: información, comunicación, trabajo en equipo y dirección participativa por objetivos. La comunicación debe circular en ambos sentidos, con una dirección que explica y también escucha; cuando falta, aparecen rumores, desconfianza y órdenes mal entendidas, como en el caso. La información se refiere a los datos que cada persona necesita para decidir, y el enunciado no describe falta de datos ni de objetivos comunes."
+}
+];
+let cur=0,score=0,answered=[];
+function render(){
+  const q=Qs[cur];
+  document.getElementById('prog').style.width=Math.round((cur/Qs.length)*100)+'%';
+  let h=`<div class="card"><div class="qnum">Pregunta ${cur+1} de ${Qs.length}</div><div class="qtext">${q.q}</div>`;
+  q.opts.forEach((o,i)=>{h+=`<div class="opt" id="op${i}" onclick="pick(${i})"><div class="dot" id="dot${i}"></div><span>${o}</span></div>`;});
+  h+=`<div class="fb" id="fb"></div></div>`;
+  document.getElementById('qbody').innerHTML=h;
+  document.getElementById('btnr').style.display='none';
+}
+function pick(i){
+  const q=Qs[cur];
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=null);
+  const ok=i===q.ans;
+  document.getElementById('op'+i).classList.add(ok?'correct':'wrong');
+  document.getElementById('dot'+i).textContent=ok?'✓':'✗';
+  if(!ok){document.getElementById('op'+q.ans).classList.add('correct');document.getElementById('dot'+q.ans).textContent='✓';}
+  const fb=document.getElementById('fb');
+  fb.textContent=q.fb;fb.className='fb show '+(ok?'ok':'ko');
+  if(ok)score++;
+  answered.push({q:q.q,ok});cur++;
+  if(cur<Qs.length){
+    const b=document.createElement('button');b.className='btn-next show';b.textContent='Siguiente →';b.onclick=render;
+    document.querySelector('.card').appendChild(b);
+  } else {document.getElementById('btnr').style.display='block';}
+}
+function showResult(){
+  document.getElementById('qbody').innerHTML='';document.getElementById('btnr').style.display='none';
+  document.getElementById('reswrap').style.display='block';
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('gpct').textContent=pct+'%';drawGauge(pct);
+  let label,sub,color;
+  if(pct>=87){label='Excelente dominio';sub='Comprendes sólidamente los contenidos del capítulo 5.';color='#3B6D11';}
+  else if(pct>=62){label='Buen nivel';sub='Hay algunos conceptos que vale la pena repasar.';color='#BA7517';}
+  else{label='Necesitas repasar';sub='Te recomendamos repasar las láminas del capítulo 5 antes de continuar.';color='#A32D2D';}
+  const rl=document.getElementById('rlabel');rl.textContent=label;rl.style.color=color;
+  document.getElementById('rsub').textContent=sub;
+  document.getElementById('review').innerHTML=answered.map((a,i)=>
+    `<div class="ri"><div class="ri-q">${i+1}. ${a.q}</div><div class="${a.ok?'rok':'rko'}">${a.ok?'✓ Correcta':'✗ Incorrecta'}</div></div>`).join('');
+}
+function drawGauge(pct){
+  const c=document.getElementById('gauge'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,220,120);
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,2*Math.PI);ctx.strokeStyle='#E0E0E0';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+  const color=pct>=87?'#3B6D11':pct>=62?'#BA7517':'#A32D2D';
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,Math.PI+(pct/100)*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+}
+function restart(){cur=0;score=0;answered=[];document.getElementById('reswrap').style.display='none';render();}
+document.getElementById('btnr').onclick=showResult;
+render();
+</script>
+</body>
+</html>
