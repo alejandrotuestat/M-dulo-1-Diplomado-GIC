@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación Capítulo 1 · Módulo 1 DGIC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.logo{display:inline-block;background:#C00000;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:12px;letter-spacing:.05em}
+.pb{height:5px;background:#E0E0E0;border-radius:3px;margin-bottom:1.5rem}
+.pf{height:5px;background:#185FA5;border-radius:3px;transition:width .3s}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.qnum{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:#1A1A1A}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid #E0E0E0;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;line-height:1.45;color:#1A1A1A;transition:border-color .15s,background .15s}
+.opt:hover{background:#F0F7FF;border-color:#185FA5}
+.opt.correct{border-color:#3B6D11;background:#EAF3DE;color:#27500A}
+.opt.wrong{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #CCC;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.opt.correct .dot{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.opt.wrong .dot{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.fb{font-size:13px;padding:10px 12px;border-radius:8px;margin-top:10px;line-height:1.55;display:none}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#1E4D08;border:1px solid #7BBF5A}
+.fb.ko{background:#FCEBEB;color:#791F1F;border:1px solid #E08080}
+.btn-next{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#185FA5;color:#fff;border:none;font-size:15px;font-weight:500;cursor:pointer;display:none}
+.btn-next.show{display:block}
+.btn-result{width:100%;padding:14px;margin-top:1.5rem;border-radius:8px;background:#C00000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;display:none}
+.btn-result.show{display:block}
+.result{display:none;text-align:center;padding:.5rem 0}
+.result.show{display:block}
+.gauge-wrap{position:relative;width:220px;height:120px;margin:0 auto 1rem}
+canvas{display:block}
+.gauge-pct{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#1A1A1A}
+.result-label{font-size:18px;font-weight:600;margin-bottom:6px}
+.result-sub{font-size:14px;color:#555;margin-bottom:1.5rem;line-height:1.5}
+.ri{text-align:left;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ri-q{font-weight:500;margin-bottom:4px;line-height:1.4;color:#1A1A1A}
+.rok{color:#27500A;font-weight:500}.rko{color:#791F1F;font-weight:500}
+.btn-retry{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#fff;color:#1A1A1A;border:1.5px solid #CCC;font-size:14px;cursor:pointer}
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#AAA}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <div class="logo">DGIC · MÓDULO 1</div>
+  <h1>Autoevaluación · Capítulo 1</h1>
+  <p>Introducción · 8 preguntas</p>
+</div>
+<div class="pb"><div class="pf" id="prog" style="width:0%"></div></div>
+<div id="qbody"></div>
+<button class="btn-result" id="btnr">Ver mi resultado</button>
+<div class="result" id="reswrap">
+  <div class="gauge-wrap"><canvas id="gauge" width="220" height="120"></canvas><div class="gauge-pct" id="gpct"></div></div>
+  <div class="result-label" id="rlabel"></div>
+  <div class="result-sub" id="rsub"></div>
+  <div id="review"></div>
+  <button class="btn-retry" onclick="restart()">Intentar de nuevo</button>
+</div>
+<div class="footer">Diploma en Gestión Integrada de Calidad, Seguridad y Medio Ambiente · FEN · Universidad de Chile</div>
+</div>
+<script>
+const Qs=[
+{
+"q": "En la cadena que crea valor sostenible, ¿qué significa que un resultado sea sostenible?",
+"opts": [
+"Que crece cada año, aunque para lograrlo se requieran más horas de trabajo y más recursos naturales.",
+"Que se mantiene en el tiempo y no se logra a costa de las personas, el entorno o la confianza.",
+"Que cumple la meta del período con el menor costo posible para los dueños o los mandantes.",
+"Que el reporte anual incluye indicadores ambientales y sociales junto a los financieros."
+],
+"ans": 1,
+"fb": "El curso define como sostenible el resultado que se mantiene en el tiempo y que no se obtiene a costa de las personas, del entorno ni de la confianza. Crecer cada año o cumplir la meta al menor costo describe desempeño, pero no dice nada sobre lo que se sacrificó para lograrlo. Reportar indicadores ambientales y sociales permite informar sobre la sostenibilidad, pero no la asegura."
+},
+{
+"q": "Un servicio público recibe cada vez más reclamos por trámites con errores y reprocesos. Según la cadena de valor sostenible, ¿dónde conviene buscar primero la causa?",
+"opts": [
+"En la satisfacción de los usuarios, porque es el eslabón donde el problema se hace visible.",
+"En los resultados del servicio, revisando su cobertura y la confianza ciudadana del año.",
+"En las expectativas de los usuarios, que pueden estar por sobre lo que el servicio ofrece.",
+"En las competencias de los funcionarios y en el proceso que ejecutan, eslabones previos."
+],
+"ans": 3,
+"fb": "La cadena se lee de la base hacia arriba: las personas competentes hacen posibles procesos eficaces y eficientes, estos satisfacen a usuarios y partes interesadas, y de ahí salen los resultados. El curso usa este mismo ejemplo: funcionarios capacitados resuelven trámites sin errores ni reprocesos. Los reclamos son el síntoma. Revisar la satisfacción o los resultados mide el efecto, y atribuir el problema a las expectativas de los usuarios lo saca de la organización sin corregir su causa."
+},
+{
+"q": "El curso distingue tres perspectivas de un mismo sistema organizacional. ¿Qué pregunta corresponde a la de riesgos y continuidad?",
+"opts": [
+"¿Cómo protegemos el valor creado frente a lo que puede comprometerlo, incluida una interrupción?",
+"¿Qué valor debemos preservar a largo plazo y para cuáles partes interesadas lo estamos creando hoy?",
+"¿Cómo gobernamos procesos y responsabilidades para cumplir los objetivos y mejorar?",
+"¿Cómo demostramos a los reguladores que la operación cumple con la ley de su sector?"
+],
+"ans": 0,
+"fb": "La perspectiva de riesgos y continuidad pregunta cómo proteger el valor frente a lo que puede comprometerlo, incluida una interrupción, y también cómo aprovechar lo que puede aumentarlo. Preguntar qué valor preservar y para quién corresponde a la sostenibilidad, y preguntar cómo gobernar procesos y responsabilidades corresponde a los sistemas de gestión. Demostrar el cumplimiento legal es una expectativa de los reguladores como parte interesada, no una de las tres perspectivas."
+},
+{
+"q": "La gerencia decide agregar un turno de noche para atender más pedidos. ¿Qué afirmación refleja el enfoque integrado que propone el curso?",
+"opts": [
+"Debe revisarlo primero prevención de riesgos, porque la fatiga y los accidentes son lo más grave.",
+"Lo decide producción y después calidad, ambiente y seguridad verifican cada uno su propio ámbito.",
+"Se decide una sola vez, con las miradas de sostenibilidad, gestión y riesgos sobre la mesa.",
+"Basta con el análisis de riesgos, porque considera también las oportunidades y los efectos en la comunidad."
+],
+"ans": 2,
+"fb": "En el ejemplo del turno de noche, las tres preguntas aparecen a la vez: si se sigue cumpliendo lo prometido sin trasladar costos a la comunidad, quién decide y cómo se sabrá si funcionó, y qué puede salir mal o ganarse. Ninguna pertenece a un área, por eso el curso propone decidir una vez con todas las miradas. Revisar por áreas en secuencia o dar prioridad a una sola perspectiva repite la fragmentación que el enfoque integrado busca evitar."
+},
+{
+"q": "Según el enfoque del Informe Brundtland revisado en el curso, ¿qué busca el desarrollo sostenible respecto de la naturaleza?",
+"opts": [
+"Mantenerla en su estado actual, limitando las actividades productivas que la alteran o degradan.",
+"Dar prioridad a su protección por sobre el crecimiento económico cuando ambos se oponen.",
+"Gestionar sus recursos con visión de largo plazo, sin comprometer a las generaciones futuras.",
+"Compensar los daños de la producción mediante una inversión ambiental de valor equivalente."
+],
+"ans": 2,
+"fb": "El desarrollo sostenible no busca mantener la naturaleza inalterada, sino incorporar una visión de largo plazo en la gestión de los recursos para que las decisiones actuales no comprometan a las generaciones futuras (WCED, 1987; United Nations, 2015). Tampoco subordina la economía al ambiente: articula tres dimensiones interdependientes, la económica, la social y la ambiental. Compensar daños puede formar parte de una estrategia, pero no reemplaza la gestión responsable de los recursos."
+},
+{
+"q": "Según Global Footprint Network (2023), la humanidad usa el equivalente a 1,75 planetas Tierra por año. ¿Qué significa esa cifra?",
+"opts": [
+"Que el consumo y la producción superan lo que la biosfera puede proveer y absorber cada año.",
+"Que la población mundial supera en 75% la que la agricultura actual del planeta es capaz de alimentar.",
+"Que las emisiones de gases de efecto invernadero superan en 75% el límite fijado en la Agenda 2030.",
+"Que cada persona usa en promedio 1,75 hectáreas productivas, algo por sobre las 1,6 disponibles."
+],
+"ans": 0,
+"fb": "La huella ecológica compara la demanda humana de recursos con la capacidad ecológica de la biosfera, es decir, la superficie productiva disponible para proveer recursos y absorber desechos. Usar 1,75 planetas significa que esa demanda supera la capacidad en alrededor de 75% (GFN, 2023). La cifra no mide población ni emisiones, y tampoco es una superficie por persona: si la huella fuera de 1,75 hectáreas frente a 1,6 disponibles por habitante, el exceso sería menor a 10%, no de 75%."
+},
+{
+"q": "Según el curso, ¿cómo se distribuye la responsabilidad de impulsar la sostenibilidad?",
+"opts": [
+"Recae en el Estado, que fija las regulaciones que después obligan a las empresas.",
+"Recae en las empresas, porque generan la mayor parte de los impactos ambientales.",
+"Recae en la ciudadanía, cuyas decisiones de consumo orientan lo que se produce.",
+"Se comparte entre Estado, empresas, academia, sociedad civil y ciudadanía."
+],
+"ans": 3,
+"fb": "El curso presenta la sostenibilidad como una tarea de varios actores con responsabilidades distintas y complementarias: el Estado, las empresas, la academia, las organizaciones de la sociedad civil y la ciudadanía (United Nations, 2015; UNESCO, 2017). Cada distractor toma un actor real y le atribuye toda la responsabilidad. La regulación, la actividad empresarial y el consumo influyen, pero ninguno basta por sí mismo si los demás no actúan de forma coherente."
+},
+{
+"q": "Un sistema de gestión luce impecable en el papel, pero no cambia lo que ocurre en la operación. ¿Qué explicación ofrece el curso?",
+"opts": [
+"Los procedimientos quedaron muy generales y deben detallarse para cada uno de los puestos de trabajo.",
+"Las decisiones diarias siguen a la cultura, la manera de hacer las cosas, y no al manual.",
+"Faltan auditorías más frecuentes para detectar a quienes no siguen lo documentado.",
+"El sistema se diseñó sin indicadores, y por eso nadie puede saber si funciona."
+],
+"ans": 1,
+"fb": "El curso sostiene que la mayoría de las decisiones diarias no salen del manual, sino de la manera en que se hacen las cosas en la organización, es decir, de su cultura. Por eso calidad, ambiente y seguridad se presentan como tres culturas que se ven en comportamientos cotidianos. Detallar más los procedimientos, auditar con más frecuencia o agregar indicadores pueden ayudar, pero no cambian la conducta si la cultura no acompaña."
+}
+];
+let cur=0,score=0,answered=[];
+function render(){
+  const q=Qs[cur];
+  document.getElementById('prog').style.width=Math.round((cur/Qs.length)*100)+'%';
+  let h=`<div class="card"><div class="qnum">Pregunta ${cur+1} de ${Qs.length}</div><div class="qtext">${q.q}</div>`;
+  q.opts.forEach((o,i)=>{h+=`<div class="opt" id="op${i}" onclick="pick(${i})"><div class="dot" id="dot${i}"></div><span>${o}</span></div>`;});
+  h+=`<div class="fb" id="fb"></div></div>`;
+  document.getElementById('qbody').innerHTML=h;
+  document.getElementById('btnr').style.display='none';
+}
+function pick(i){
+  const q=Qs[cur];
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=null);
+  const ok=i===q.ans;
+  document.getElementById('op'+i).classList.add(ok?'correct':'wrong');
+  document.getElementById('dot'+i).textContent=ok?'✓':'✗';
+  if(!ok){document.getElementById('op'+q.ans).classList.add('correct');document.getElementById('dot'+q.ans).textContent='✓';}
+  const fb=document.getElementById('fb');
+  fb.textContent=q.fb;fb.className='fb show '+(ok?'ok':'ko');
+  if(ok)score++;
+  answered.push({q:q.q,ok});cur++;
+  if(cur<Qs.length){
+    const b=document.createElement('button');b.className='btn-next show';b.textContent='Siguiente →';b.onclick=render;
+    document.querySelector('.card').appendChild(b);
+  } else {document.getElementById('btnr').style.display='block';}
+}
+function showResult(){
+  document.getElementById('qbody').innerHTML='';document.getElementById('btnr').style.display='none';
+  document.getElementById('reswrap').style.display='block';
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('gpct').textContent=pct+'%';drawGauge(pct);
+  let label,sub,color;
+  if(pct>=87){label='Excelente dominio';sub='Comprendes sólidamente los contenidos del capítulo 1.';color='#3B6D11';}
+  else if(pct>=62){label='Buen nivel';sub='Hay algunos conceptos que vale la pena repasar.';color='#BA7517';}
+  else{label='Necesitas repasar';sub='Te recomendamos repasar las láminas del capítulo 1 antes de continuar.';color='#A32D2D';}
+  const rl=document.getElementById('rlabel');rl.textContent=label;rl.style.color=color;
+  document.getElementById('rsub').textContent=sub;
+  document.getElementById('review').innerHTML=answered.map((a,i)=>
+    `<div class="ri"><div class="ri-q">${i+1}. ${a.q}</div><div class="${a.ok?'rok':'rko'}">${a.ok?'✓ Correcta':'✗ Incorrecta'}</div></div>`).join('');
+}
+function drawGauge(pct){
+  const c=document.getElementById('gauge'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,220,120);
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,2*Math.PI);ctx.strokeStyle='#E0E0E0';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+  const color=pct>=87?'#3B6D11':pct>=62?'#BA7517':'#A32D2D';
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,Math.PI+(pct/100)*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+}
+function restart(){cur=0;score=0;answered=[];document.getElementById('reswrap').style.display='none';render();}
+document.getElementById('btnr').onclick=showResult;
+render();
+</script>
+</body>
+</html>
