@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación Capítulo 3 · Módulo 1 DGIC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.logo{display:inline-block;background:#C00000;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:12px;letter-spacing:.05em}
+.pb{height:5px;background:#E0E0E0;border-radius:3px;margin-bottom:1.5rem}
+.pf{height:5px;background:#185FA5;border-radius:3px;transition:width .3s}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.qnum{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:#1A1A1A}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid #E0E0E0;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;line-height:1.45;color:#1A1A1A;transition:border-color .15s,background .15s}
+.opt:hover{background:#F0F7FF;border-color:#185FA5}
+.opt.correct{border-color:#3B6D11;background:#EAF3DE;color:#27500A}
+.opt.wrong{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #CCC;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.opt.correct .dot{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.opt.wrong .dot{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.fb{font-size:13px;padding:10px 12px;border-radius:8px;margin-top:10px;line-height:1.55;display:none}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#1E4D08;border:1px solid #7BBF5A}
+.fb.ko{background:#FCEBEB;color:#791F1F;border:1px solid #E08080}
+.btn-next{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#185FA5;color:#fff;border:none;font-size:15px;font-weight:500;cursor:pointer;display:none}
+.btn-next.show{display:block}
+.btn-result{width:100%;padding:14px;margin-top:1.5rem;border-radius:8px;background:#C00000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;display:none}
+.btn-result.show{display:block}
+.result{display:none;text-align:center;padding:.5rem 0}
+.result.show{display:block}
+.gauge-wrap{position:relative;width:220px;height:120px;margin:0 auto 1rem}
+canvas{display:block}
+.gauge-pct{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#1A1A1A}
+.result-label{font-size:18px;font-weight:600;margin-bottom:6px}
+.result-sub{font-size:14px;color:#555;margin-bottom:1.5rem;line-height:1.5}
+.ri{text-align:left;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ri-q{font-weight:500;margin-bottom:4px;line-height:1.4;color:#1A1A1A}
+.rok{color:#27500A;font-weight:500}.rko{color:#791F1F;font-weight:500}
+.btn-retry{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#fff;color:#1A1A1A;border:1.5px solid #CCC;font-size:14px;cursor:pointer}
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#AAA}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <div class="logo">DGIC · MÓDULO 1</div>
+  <h1>Autoevaluación · Capítulo 3</h1>
+  <p>Proyecto de empresa · 24 preguntas</p>
+</div>
+<div class="pb"><div class="pf" id="prog" style="width:0%"></div></div>
+<div id="qbody"></div>
+<button class="btn-result" id="btnr">Ver mi resultado</button>
+<div class="result" id="reswrap">
+  <div class="gauge-wrap"><canvas id="gauge" width="220" height="120"></canvas><div class="gauge-pct" id="gpct"></div></div>
+  <div class="result-label" id="rlabel"></div>
+  <div class="result-sub" id="rsub"></div>
+  <div id="review"></div>
+  <button class="btn-retry" onclick="restart()">Intentar de nuevo</button>
+</div>
+<div class="footer">Diploma en Gestión Integrada de Calidad, Seguridad y Medio Ambiente · FEN · Universidad de Chile</div>
+</div>
+<script>
+const Qs=[
+{
+"q": "Una organización declara: “Desarrollamos productos tecnológicos eficientes que mejoran la productividad y reducen el impacto ambiental”. Según la distinción del curso, ¿qué es esa declaración?",
+"opts": [
+"Su propósito, porque expresa la razón de fondo por la que la organización existe.",
+"Su misión, porque declara qué hace hoy la organización y cómo lo hace.",
+"Su visión, porque describe el futuro que la organización aspira a alcanzar.",
+"Un objetivo estratégico, porque fija un resultado clave que se debe medir."
+],
+"ans": 1,
+"fb": "El curso distingue tres preguntas: el propósito responde por qué existimos, la visión qué queremos lograr y la misión qué hacemos y cómo. Esta frase describe la actividad actual, productos eficientes que mejoran la productividad, y por eso es una misión; es el mismo ejemplo de la tabla comparativa del curso. Un propósito apuntaría a la razón de fondo, una visión a un estado futuro y un objetivo a un resultado medible con plazo."
+},
+{
+"q": "¿Qué caracteriza a una visión efectiva, según Collins y Porras (1996) y Kotter (2012)?",
+"opts": [
+"Detalla las actividades actuales y los mercados en que hoy opera la organización.",
+"Fija metas numéricas anuales que permiten medir el avance de cada una de las áreas.",
+"Explica por qué existe la organización, más allá de sus resultados económicos.",
+"Describe un estado futuro deseado que da dirección y alinea a los equipos."
+],
+"ans": 3,
+"fb": "La visión expresa la imagen deseada del futuro, un estado que aún no se alcanza, y su función es dar dirección, motivar y alinear a los equipos (Collins & Porras, 1996; Kotter, 2012). Detallar las actividades actuales corresponde a la misión. Las metas numéricas anuales derivan de los objetivos. Explicar por qué existe la organización es la función del propósito."
+},
+{
+"q": "Según EFQM (2020), ¿qué función cumple el propósito de una organización?",
+"opts": [
+"Explica su razón de ser y sienta las bases para crear valor para la sociedad.",
+"Define los productos y servicios con que la organización compite en su mercado actual.",
+"Establece el resultado financiero que la organización espera obtener en el largo plazo.",
+"Fija las normas de conducta que deben orientar el comportamiento de cada trabajador."
+],
+"ans": 0,
+"fb": "Para EFQM (2020) el propósito es la razón más profunda de la existencia de la organización: explica su rol en la sociedad, sienta las bases para crear valor y ofrece un marco para evaluar su impacto. No se limita al beneficio económico, por eso no equivale a un resultado financiero. Definir productos y mercados corresponde a la misión, y las normas de conducta, a los valores."
+},
+{
+"q": "¿Cuál de las siguientes declaraciones corresponde a un valor organizacional?",
+"opts": [
+"Aumentar en 10% la satisfacción de los usuarios durante el próximo año.",
+"Producir y comercializar polipropileno de alta calidad para la industria regional.",
+"Respeto a las personas y a sus bienes, con equidad y valoración del mérito.",
+"Ser un proveedor de excelencia en la industria transformadora de resinas."
+],
+"ans": 2,
+"fb": "Los valores son principios o normas de conducta que guían decisiones y comportamientos (Schwartz, 1992; Robbins & Judge, 2013). El respeto y la equidad describen cómo se actúa. Aumentar la satisfacción en 10% en un año es una meta. Producir y comercializar polipropileno de calidad es la misión del ejemplo de Petroquim visto en el curso, y ser un proveedor de excelencia es su visión."
+},
+{
+"q": "Una empresa depende de un único proveedor para un insumo crítico, por una decisión de compras tomada hace años. ¿Cómo se clasifica en el FODA, según el criterio del curso?",
+"opts": [
+"Como debilidad, porque deriva de una decisión propia que puede modificar.",
+"Como amenaza, porque el proveedor es externo y la organización no controla su conducta.",
+"Como restricción del contexto, porque la oferta de ese insumo la fija el mercado.",
+"Como fortaleza, porque concentrar las compras reduce los costos de gestión."
+],
+"ans": 0,
+"fb": "El curso clasifica primero por control: es interno lo que la organización puede decidir o modificar por sí misma. Depender de un solo proveedor fue una decisión propia, y el curso la usa como ejemplo de debilidad. El poder que ese proveedor tenga sobre la empresa puede registrarse aparte como amenaza, pero la dependencia es interna. Una restricción del contexto es algo que rige para todos y que no se eligió."
+},
+{
+"q": "Todas las empresas del sector están certificadas en ISO 9001, incluida la nuestra. Según el caso del asaltante, ¿cómo se clasifica nuestra certificación?",
+"opts": [
+"Como fortaleza, porque es una capacidad valiosa que la organización controla.",
+"Como paridad, porque es valiosa pero no nos distingue del referente.",
+"Como oportunidad, porque el mercado exige la certificación a sus proveedores.",
+"Como debilidad, porque no aporta ventaja alguna frente a la competencia."
+],
+"ans": 1,
+"fb": "El curso aplica dos preguntas: si la organización lo controla y cómo queda frente al referente. La certificación es interna, y frente al referente quedamos iguales: es paridad, que no entra al FODA. Lo que todos tienen no distingue. Sería fortaleza si la usáramos mejor que el resto, por ejemplo con menos reclamos y reprocesos. Que el mercado la exija describe el entorno, no la certificación propia."
+},
+{
+"q": "Un servicio público opera con un presupuesto fijado por ley. ¿Cómo lo trata el análisis FODA visto en el curso?",
+"opts": [
+"Como debilidad, porque limita los recursos del servicio frente a otras instituciones.",
+"Como amenaza, porque podría reducirse en la próxima discusión presupuestaria.",
+"Como paridad, porque los servicios públicos operan con presupuestos fijados por ley.",
+"Como restricción del contexto; la debilidad, si existe, estaría en cómo se asigna."
+],
+"ans": 3,
+"fb": "Una restricción del contexto rige para todos y no la eligió la organización, por eso no es debilidad: una debilidad exige una decisión propia. El curso usa este mismo ejemplo: el presupuesto fijado por ley es restricción, pero cómo se asigna sí depende del servicio, y ahí puede haber una debilidad real. Un posible recorte futuro podría analizarse como amenaza, pero eso es otro factor."
+},
+{
+"q": "Según Barney (1991), ¿cuándo da una capacidad ventaja competitiva sostenible?",
+"opts": [
+"Cuando está documentada y certificada por un tercero independiente.",
+"Cuando la organización la desarrolló antes que sus competidores directos.",
+"Cuando es valiosa, escasa, difícil de imitar y no tiene sustitutos.",
+"Cuando permite tener costos menores que el promedio del sector."
+],
+"ans": 2,
+"fb": "Barney (1991) plantea que una capacidad da ventaja sostenible si cumple cuatro condiciones a la vez: es valiosa, escasa, difícil de imitar y sin sustitutos. Una certificación documenta la capacidad, pero no la hace escasa ni inimitable. Llegar primero ayuda si los demás no pueden copiarla. Tener costos menores puede ser una fuente de ventaja, pero solo es sostenible si la capacidad que lo permite cumple las cuatro condiciones."
+},
+{
+"q": "Una comunidad vecina organizada tiene alto interés en las decisiones de una planta, pero poco poder para influir en ellas. Según la matriz interés-poder, ¿qué corresponde hacer?",
+"opts": [
+"Mantenerla informada, con comunicación regular sobre lo que la afecta.",
+"Gestionarla de cerca e involucrarla en las decisiones como actor clave.",
+"Mantenerla satisfecha, atendiendo sus requisitos para que no sea crítica.",
+"Monitorearla de vez en cuando, con un esfuerzo mínimo de relación."
+],
+"ans": 0,
+"fb": "La matriz cruza el poder para influir con el interés en las decisiones (Mendelow, 1991). Con interés alto y poder bajo, la recomendación es mantener informado, con comunicación regular; el curso pone como ejemplo a la comunidad vecina. Gestionar de cerca corresponde a poder e interés altos, mantener satisfecho a poder alto con interés bajo y el esfuerzo mínimo a ambos bajos. Si la comunidad gana poder, por ejemplo por vía judicial, cambia de cuadrante."
+},
+{
+"q": "En una tabla FODA ponderada, la debilidad con mayor puntaje es la que más se relaciona con las amenazas. ¿Qué tipo de objetivo surge de ese cruce, según Weihrich (1982)?",
+"opts": [
+"Adaptativo, mini-maxi: corregir la debilidad para aprovechar las oportunidades.",
+"Defensivo, maxi-mini: potenciar las fortalezas para resistir las amenazas.",
+"Ofensivo, maxi-maxi: potenciar las fortalezas para aprovechar las oportunidades.",
+"De supervivencia, mini-mini: corregir la debilidad para atenuar las amenazas."
+],
+"ans": 3,
+"fb": "El cruce de debilidades con amenazas, DA, es el cuadrante mini-mini de Weihrich (1982), de supervivencia: superar las debilidades para atenuar el efecto de las amenazas. En el ejemplo del curso, la debilidad de mayor puntaje frente a las amenazas fue el reclamo de clientes, y el objetivo resultante fue reducir esos reclamos. Los otros cuadrantes cruzan factores distintos: DO es adaptativo, FA defensivo y FO ofensivo."
+},
+{
+"q": "Un equipo lista sus fortalezas sin compararlas con ningún competidor ni referente, y concluye que la empresa es muy superior en casi todo. ¿Qué problema muestra este FODA?",
+"opts": [
+"Mezcla el FODA con herramientas incompatibles, como PESTEL y las cinco fuerzas.",
+"Sobreestima sus capacidades, porque una fortaleza exige compararse con un referente.",
+"Refleja falsa unanimidad, porque el equipo no se atrevió a contradecir a la gerencia.",
+"No tiene problemas, porque una fortaleza es lo que la organización hace bien."
+],
+"ans": 1,
+"fb": "El curso subraya la crítica más común al FODA: fortalezas y debilidades solo tienen sentido frente a un referente. Evaluarse sin compararse lleva a sobreestimar capacidades y a diagnósticos superficiales (Barney, 1991; Piercy & Giles, 1989). Hacer algo bien no basta si el competidor lo hace igual o mejor. PESTEL y las cinco fuerzas son insumos del FODA, no herramientas incompatibles, y el enunciado no describe presión jerárquica."
+},
+{
+"q": "Una cadena de supermercados puede elegir entre muchos proveedores de alimentos poco diferenciados. Según las cinco fuerzas de Porter, ¿qué ocurre con el poder de negociación de esos proveedores?",
+"opts": [
+"Es bajo, porque el comprador puede cambiar de proveedor con facilidad.",
+"Es alto, porque los alimentos son insumos indispensables para la cadena.",
+"Es alto, porque al ser muchos pueden coordinarse para fijar sus precios.",
+"Depende de las barreras de entrada al sector, que es la fuerza que lo define."
+],
+"ans": 0,
+"fb": "El poder de negociación de los proveedores crece con su concentración y con la diferenciación de lo que venden, y es bajo cuando el comprador puede elegir entre muchos proveedores indiferenciados; el curso usa este mismo ejemplo de los supermercados. Que el insumo sea necesario no basta si hay muchos oferentes. La coordinación es más difícil cuando los proveedores son muchos. Las barreras de entrada son otra fuerza, referida a nuevos competidores."
+},
+{
+"q": "¿Qué le falta al objetivo “Mejorar la atención a los usuarios” para cumplir el modelo SMART (Doran, 1981)?",
+"opts": [
+"Hacerlo más inspirador, para que motive a los funcionarios del servicio.",
+"Asignarle presupuesto, porque los recursos son lo que lo vuelve alcanzable.",
+"Hacerlo medible y con plazo, con indicador y fecha de logro.",
+"Redactarlo como misión, para que oriente al conjunto de la institución."
+],
+"ans": 2,
+"fb": "El modelo SMART pide objetivos específicos, medibles, alcanzables, relevantes y con plazo (Doran, 1981). La frase es relevante, pero no dice cuánto mejorar, cómo medirlo ni para cuándo. La inspiración es propia de la visión. Los recursos inciden en que sea alcanzable, pero no lo hacen medible ni le fijan plazo. Convertirlo en misión lo volvería más general, no más preciso."
+},
+{
+"q": "¿Qué distingue a una meta de un objetivo estratégico?",
+"opts": [
+"La meta es de largo plazo y el objetivo es su traducción operativa anual.",
+"La meta cuantifica el objetivo y fija el logro esperado en un período.",
+"La meta expresa una aspiración general y el objetivo la vuelve medible.",
+"La meta la fija cada área y el objetivo lo fija la autoridad de turno."
+],
+"ans": 1,
+"fb": "El curso define las metas como la cuantificación concreta de los objetivos estratégicos: expresan el nivel de logro esperado en un período y permiten el seguimiento. Por ejemplo, el objetivo es aumentar las ventas y la meta es vender US$ 600.000 en el año. Las dos opciones intermedias invierten la relación. Quién las fija no es lo que las distingue: ambas deben ser coherentes con la estrategia."
+},
+{
+"q": "La meta anual es vender US$ 600.000, el valor promedio de una orden de compra es US$ 6.000 y se necesitan 3 cotizaciones por cada orden (hit rate 3:1). ¿Cuántas cotizaciones hay que emitir en el año?",
+"opts": [
+"100 cotizaciones, porque se requieren 100 órdenes de US$ 6.000 cada una.",
+"200 cotizaciones, porque de cada 3 cotizaciones se pierden 2 que no se cierran.",
+"600 cotizaciones, porque hay que duplicar las órdenes para asegurar la meta.",
+"300 cotizaciones, porque se requieren 100 órdenes y 3 cotizaciones por cada una."
+],
+"ans": 3,
+"fb": "La descomposición parte de la meta: US$ 600.000 divididos por US$ 6.000 dan 100 órdenes de compra. Con un hit rate de 3:1 se necesitan 3 cotizaciones por orden, es decir, 300. Cien es el número de órdenes, no de cotizaciones. Doscientos son las cotizaciones que no se cierran, no el total. Seiscientos corresponde, en el ejemplo del curso, a las visitas que generan esas 300 cotizaciones con una tasa de 2:1."
+},
+{
+"q": "Según el curso, ¿qué ocurre con los indicadores cuando un objetivo está mal definido?",
+"opts": [
+"Desaparecen, porque sin un objetivo claro no hay nada que medir.",
+"Miden lo que es fácil de medir y no lo que importa para la estrategia.",
+"Se vuelven más exigentes, para compensar la falta de foco del objetivo.",
+"Siguen siendo válidos, porque miden procesos y no objetivos."
+],
+"ans": 1,
+"fb": "El curso presenta el objetivo como la pieza que articula estrategia, procesos e indicadores. Cuando está mal definido, la estrategia se dispersa, se optimizan tareas que no crean valor y los indicadores miden lo fácil de medir, no lo que importa. Los indicadores no desaparecen: siguen produciéndose, pero pierden sentido. Un indicador de proceso también debe conectarse con un objetivo para orientar decisiones."
+},
+{
+"q": "Una empresa implementa Lean y Six Sigma y reduce sus costos, igual que lo hacen sus competidores. Según Porter (1996), ¿qué logró?",
+"opts": [
+"Efectividad operativa: hace lo mismo mejor, sin diferenciarse de sus rivales.",
+"Una estrategia de liderazgo en costos, que le asegura ventaja frente al sector.",
+"Una estrategia de diferenciación, porque mejoró la calidad de sus procesos.",
+"Una ventaja competitiva duradera, porque la eficiencia es difícil de copiar."
+],
+"ans": 0,
+"fb": "Porter (1996) sostiene que la efectividad operativa no es estrategia: mejorar procesos, reducir errores o costos con Lean o Six Sigma es hacer lo mismo mejor, y los rivales pueden imitarlo, como ocurre en el caso. La estrategia consiste en elegir actividades distintas, o realizarlas de otra manera, para ofrecer una combinación única de valor. Si todos reducen costos, nadie obtiene liderazgo en costos ni diferenciación por esa vía."
+},
+{
+"q": "Según Lafley y Martin (2013), ¿qué distingue a una estrategia de una lista de objetivos?",
+"opts": [
+"Cuantificar cada objetivo con metas y asignar un responsable a cada una.",
+"Elaborar un presupuesto detallado que respalde las iniciativas de cada área.",
+"Decidir dónde competir y cómo ganar, y establecer qué no se va a hacer.",
+"Incluir a los grupos de interés en la redacción de los objetivos."
+],
+"ans": 2,
+"fb": "Lafley y Martin (2013) plantean la estrategia como una cascada integrada de decisiones: una ambición ganadora, dónde competir, cómo ganar y, sobre todo, qué no se va a hacer. Una lista de objetivos con metas, responsables y presupuesto es planificación útil, pero no contiene esas elecciones. Involucrar a los grupos de interés puede mejorar la legitimidad, pero no reemplaza la decisión."
+},
+{
+"q": "Un gerente presenta una planilla con objetivos comerciales y de producción, un presupuesto y una presentación que los justifica. Según el curso, ¿qué es?",
+"opts": [
+"Un plan estratégico completo, porque reúne objetivos, recursos y justificación.",
+"Una estrategia, porque define los resultados que debe lograr cada área.",
+"Un mapa estratégico, porque relaciona los objetivos con los recursos financieros.",
+"Planificación, útil pero insuficiente, porque no contiene las decisiones de fondo."
+],
+"ans": 3,
+"fb": "El curso usa esta misma escena para mostrar que una planilla, un presupuesto y una presentación son planificación, no estrategia. Hacer estrategia es tomar decisiones clave y coherentes sobre el rumbo de largo plazo: dónde competir, cómo crear valor y qué dejar de hacer. Definir resultados por área no implica haber elegido. Un mapa estratégico relaciona objetivos de las cuatro perspectivas en una cadena causa-efecto, no solo con el presupuesto."
+},
+{
+"q": "Una empresa atiende a un solo segmento de clientes de altos ingresos con productos exclusivos. Según las estrategias genéricas de Porter (1980), ¿qué estrategia sigue?",
+"opts": [
+"Diferenciación, porque ofrece productos exclusivos a varios segmentos.",
+"Liderazgo en costos, porque su escala le permite fijar precios altos.",
+"Concentración o focalización, centrada en uno o pocos segmentos.",
+"Desarrollo horizontal, porque amplía su gama de productos exclusivos."
+],
+"ans": 2,
+"fb": "Porter (1980) distingue liderazgo en costos, diferenciación y concentración. Lo que define la concentración es el alcance: uno o pocos segmentos, y dentro de ellos se puede competir por precio o por exclusividad. Aquí hay exclusividad, pero en un solo segmento, por eso es concentración y no diferenciación, que apunta a varios segmentos. El liderazgo en costos compite por precio bajo en un mercado masivo. El desarrollo horizontal es una forma de crecimiento, no una estrategia genérica."
+},
+{
+"q": "Según la clasificación del curso, un plan de dos años que traduce la estrategia en programas por áreas, ¿qué tipo de plan es?",
+"opts": [
+"De mediano plazo, que comprende períodos de uno a tres años.",
+"De largo plazo, porque supera los doce meses de un ejercicio contable.",
+"De corto plazo, porque se ejecuta mediante programas de cada área.",
+"Operativo, porque se enfoca en tareas inmediatas de cada unidad."
+],
+"ans": 0,
+"fb": "El curso clasifica los planes por horizonte: corto plazo hasta un año, mediano plazo de uno a tres años y largo plazo sobre tres años. El mediano plazo suele traducir la estrategia en programas e iniciativas por áreas (OCDE, 2005). El criterio contable de doce meses (NIC 1) es otro uso del término y no rige esta clasificación. Que se ejecute por áreas no lo vuelve operativo ni de corto plazo."
+},
+{
+"q": "¿Qué rasgo corresponde a un plan táctico y no a uno estratégico?",
+"opts": [
+"Lo elabora la alta dirección y afecta al conjunto de la organización.",
+"Es detallado, de corto plazo y de eficacia fácil de medir.",
+"Enfrenta alta incertidumbre y se aplica a problemas no repetitivos.",
+"Suele innovar y está cargado de valores y juicios subjetivos."
+],
+"ans": 1,
+"fb": "En la comparación del curso, los planes tácticos se realizan en niveles intermedios, son de corto plazo, detallados, con baja incertidumbre, para problemas repetitivos y con eficacia fácil de medir. Los rasgos de las demás opciones corresponden al plan estratégico: lo elabora la alta dirección, afecta a toda la organización, enfrenta alta incertidumbre, suele innovar y está cargado de valores subjetivos."
+},
+{
+"q": "En el mapa estratégico de Kaplan y Norton (2004), ¿cómo se relacionan sus cuatro perspectivas?",
+"opts": [
+"Son independientes, y cada área de la organización mide una de ellas.",
+"La financiera determina a las demás, que se ajustan cada año al presupuesto anual.",
+"Se ordenan por importancia, de modo que la del cliente prevalece sobre las demás.",
+"En cadena causa-efecto: aprendizaje, procesos, clientes y resultados financieros."
+],
+"ans": 3,
+"fb": "El mapa estratégico organiza las perspectivas en una relación causa-efecto: el aprendizaje y crecimiento impulsa los procesos internos, estos satisfacen a clientes y partes interesadas, y el conjunto genera resultados financieros sostenibles (Kaplan & Norton, 2004). Es la misma lógica de la cadena de valor sostenible del capítulo 1. Las perspectivas no son independientes ni se reparten por área, y lo financiero es un resultado, no el punto de partida."
+},
+{
+"q": "Un plan da buenos resultados este año, pero lo logra a costa de los trabajadores o del entorno. Según el curso, ¿cómo se evalúa frente al gran objetivo de largo plazo?",
+"opts": [
+"Es aceptable si sus beneficios económicos permiten compensar después a los afectados.",
+"Es un buen plan táctico, que se puede corregir en el siguiente ciclo estratégico.",
+"Se aleja de la sostenibilidad, porque no equilibra los tres pilares.",
+"Cumple con la dimensión económica, que es la que define si un plan es sostenible."
+],
+"ans": 2,
+"fb": "El curso presenta la sostenibilidad como el gran objetivo de largo plazo y la brújula de la planificación, con tres preguntas: si es viable en el tiempo, a quién beneficia y a quién afecta, y qué huella deja. Un plan que rinde este año pero sacrifica a las personas o al entorno se aleja de ese objetivo, porque la planificación busca el equilibrio entre los tres pilares. Compensar después o corregir en el próximo ciclo no cambia que el plan, tal como está, no es sostenible."
+}
+];
+let cur=0,score=0,answered=[];
+function render(){
+  const q=Qs[cur];
+  document.getElementById('prog').style.width=Math.round((cur/Qs.length)*100)+'%';
+  let h=`<div class="card"><div class="qnum">Pregunta ${cur+1} de ${Qs.length}</div><div class="qtext">${q.q}</div>`;
+  q.opts.forEach((o,i)=>{h+=`<div class="opt" id="op${i}" onclick="pick(${i})"><div class="dot" id="dot${i}"></div><span>${o}</span></div>`;});
+  h+=`<div class="fb" id="fb"></div></div>`;
+  document.getElementById('qbody').innerHTML=h;
+  document.getElementById('btnr').style.display='none';
+}
+function pick(i){
+  const q=Qs[cur];
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=null);
+  const ok=i===q.ans;
+  document.getElementById('op'+i).classList.add(ok?'correct':'wrong');
+  document.getElementById('dot'+i).textContent=ok?'✓':'✗';
+  if(!ok){document.getElementById('op'+q.ans).classList.add('correct');document.getElementById('dot'+q.ans).textContent='✓';}
+  const fb=document.getElementById('fb');
+  fb.textContent=q.fb;fb.className='fb show '+(ok?'ok':'ko');
+  if(ok)score++;
+  answered.push({q:q.q,ok});cur++;
+  if(cur<Qs.length){
+    const b=document.createElement('button');b.className='btn-next show';b.textContent='Siguiente →';b.onclick=render;
+    document.querySelector('.card').appendChild(b);
+  } else {document.getElementById('btnr').style.display='block';}
+}
+function showResult(){
+  document.getElementById('qbody').innerHTML='';document.getElementById('btnr').style.display='none';
+  document.getElementById('reswrap').style.display='block';
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('gpct').textContent=pct+'%';drawGauge(pct);
+  let label,sub,color;
+  if(pct>=87){label='Excelente dominio';sub='Comprendes sólidamente los contenidos del capítulo 3.';color='#3B6D11';}
+  else if(pct>=62){label='Buen nivel';sub='Hay algunos conceptos que vale la pena repasar.';color='#BA7517';}
+  else{label='Necesitas repasar';sub='Te recomendamos repasar las láminas del capítulo 3 antes de continuar.';color='#A32D2D';}
+  const rl=document.getElementById('rlabel');rl.textContent=label;rl.style.color=color;
+  document.getElementById('rsub').textContent=sub;
+  document.getElementById('review').innerHTML=answered.map((a,i)=>
+    `<div class="ri"><div class="ri-q">${i+1}. ${a.q}</div><div class="${a.ok?'rok':'rko'}">${a.ok?'✓ Correcta':'✗ Incorrecta'}</div></div>`).join('');
+}
+function drawGauge(pct){
+  const c=document.getElementById('gauge'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,220,120);
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,2*Math.PI);ctx.strokeStyle='#E0E0E0';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+  const color=pct>=87?'#3B6D11':pct>=62?'#BA7517':'#A32D2D';
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,Math.PI+(pct/100)*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+}
+function restart(){cur=0;score=0;answered=[];document.getElementById('reswrap').style.display='none';render();}
+document.getElementById('btnr').onclick=showResult;
+render();
+</script>
+</body>
+</html>
