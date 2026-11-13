@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación Capítulo 2 · Módulo 1 DGIC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.logo{display:inline-block;background:#C00000;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:12px;letter-spacing:.05em}
+.pb{height:5px;background:#E0E0E0;border-radius:3px;margin-bottom:1.5rem}
+.pf{height:5px;background:#185FA5;border-radius:3px;transition:width .3s}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.qnum{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:#1A1A1A}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid #E0E0E0;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;line-height:1.45;color:#1A1A1A;transition:border-color .15s,background .15s}
+.opt:hover{background:#F0F7FF;border-color:#185FA5}
+.opt.correct{border-color:#3B6D11;background:#EAF3DE;color:#27500A}
+.opt.wrong{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #CCC;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.opt.correct .dot{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.opt.wrong .dot{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.fb{font-size:13px;padding:10px 12px;border-radius:8px;margin-top:10px;line-height:1.55;display:none}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#1E4D08;border:1px solid #7BBF5A}
+.fb.ko{background:#FCEBEB;color:#791F1F;border:1px solid #E08080}
+.btn-next{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#185FA5;color:#fff;border:none;font-size:15px;font-weight:500;cursor:pointer;display:none}
+.btn-next.show{display:block}
+.btn-result{width:100%;padding:14px;margin-top:1.5rem;border-radius:8px;background:#C00000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;display:none}
+.btn-result.show{display:block}
+.result{display:none;text-align:center;padding:.5rem 0}
+.result.show{display:block}
+.gauge-wrap{position:relative;width:220px;height:120px;margin:0 auto 1rem}
+canvas{display:block}
+.gauge-pct{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#1A1A1A}
+.result-label{font-size:18px;font-weight:600;margin-bottom:6px}
+.result-sub{font-size:14px;color:#555;margin-bottom:1.5rem;line-height:1.5}
+.ri{text-align:left;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ri-q{font-weight:500;margin-bottom:4px;line-height:1.4;color:#1A1A1A}
+.rok{color:#27500A;font-weight:500}.rko{color:#791F1F;font-weight:500}
+.btn-retry{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#fff;color:#1A1A1A;border:1.5px solid #CCC;font-size:14px;cursor:pointer}
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#AAA}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <div class="logo">DGIC · MÓDULO 1</div>
+  <h1>Autoevaluación · Capítulo 2</h1>
+  <p>Cultura en la empresa · 8 preguntas</p>
+</div>
+<div class="pb"><div class="pf" id="prog" style="width:0%"></div></div>
+<div id="qbody"></div>
+<button class="btn-result" id="btnr">Ver mi resultado</button>
+<div class="result" id="reswrap">
+  <div class="gauge-wrap"><canvas id="gauge" width="220" height="120"></canvas><div class="gauge-pct" id="gpct"></div></div>
+  <div class="result-label" id="rlabel"></div>
+  <div class="result-sub" id="rsub"></div>
+  <div id="review"></div>
+  <button class="btn-retry" onclick="restart()">Intentar de nuevo</button>
+</div>
+<div class="footer">Diploma en Gestión Integrada de Calidad, Seguridad y Medio Ambiente · FEN · Universidad de Chile</div>
+</div>
+<script>
+const Qs=[
+{
+"q": "En una planta, la gerencia exhibe carteles con el valor “la seguridad primero”, pero los supervisores premian a quien termina rápido aunque omita controles. Según Schein, ¿en qué nivel de la cultura está el problema?",
+"opts": [
+"En los artefactos, porque los carteles no son lo bastante visibles para el personal de terreno.",
+"En los valores declarados, porque el valor de seguridad quedó mal redactado en el código interno.",
+"En los supuestos básicos, porque la creencia compartida es que la producción va primero.",
+"En una subcultura, porque cada turno define sus propias reglas sin relación con la gerencia."
+],
+"ans": 2,
+"fb": "Schein (2010) distingue artefactos visibles, valores declarados y supuestos básicos, que son creencias que no se discuten y orientan la conducta. Aquí el artefacto y el valor declarado existen, pero lo que se premia revela el supuesto real: producir va antes que controlar. Mejorar los carteles o reescribir el valor no toca ese supuesto. Tampoco es una subcultura aislada, porque la refuerzan los supervisores con el sistema de reconocimiento."
+},
+{
+"q": "¿Qué caracteriza a una cultura fuerte, según lo visto en el curso?",
+"opts": [
+"Sus valores centrales se comparten con intensidad y orientan la conducta sin tanta norma escrita.",
+"Tiene muchos procedimientos escritos y controles que aseguran que todos actúen de igual forma.",
+"Su dirección es exigente y sanciona con rigor las desviaciones respecto de las normas internas.",
+"Se mantiene estable ante los cambios del entorno, lo que la protege de las modas de gestión pasajeras."
+],
+"ans": 0,
+"fb": "En una cultura fuerte los valores centrales se comparten con intensidad y guían la conducta, al punto de poder sustituir parte de la formalización (Robbins & Judge, 2013). Muchos procedimientos y controles describen formalización, no cultura. La sanción rigurosa es un estilo de dirección. La estabilidad frente al entorno puede volverse una barrera: las culturas adaptativas superan a las rígidas (Kotter & Heskett, 1992)."
+},
+{
+"q": "Un trabajador nuevo observa que cada mes se reconoce en una reunión al equipo sin accidentes, y que el gerente asiste a todas. Según Robbins y Judge, ¿qué vía de aprendizaje de la cultura opera aquí?",
+"opts": [
+"Las historias, porque el reconocimiento se convierte en un relato sobre los fundadores.",
+"Los símbolos materiales, porque la presencia del gerente indica quién es importante.",
+"El lenguaje, porque en la reunión se usa la jerga propia de la organización sobre seguridad.",
+"Los rituales, porque es una actividad repetida que muestra qué metas y personas importan."
+],
+"ans": 3,
+"fb": "Robbins y Judge (2013) describen cuatro vías: historias, rituales, símbolos materiales y lenguaje. Un reconocimiento que se repite cada mes es un ritual, porque muestra qué metas importan, aquí la seguridad, y qué personas se valoran. Las historias son relatos que anclan el presente en el pasado. Los símbolos materiales son objetos y espacios, como oficinas o uniformes. El lenguaje es la jerga compartida, que puede estar presente pero no es lo que define la situación."
+},
+{
+"q": "Una empresa declara la orientación al cliente como valor central, pero evalúa y bonifica a sus vendedores por volumen de ventas. ¿Qué mecanismo de sostenimiento de la cultura falla?",
+"opts": [
+"La selección, porque se contrató a vendedores sin la vocación de servicio que pide el valor.",
+"La coherencia entre las reglas y sistemas y aquello que la organización dice valorar.",
+"La socialización, porque la inducción no explicó con claridad lo que significa el valor.",
+"La comunicación, porque el valor no se difundió en los carteles y canales internos."
+],
+"ans": 1,
+"fb": "El curso indica que la cultura se sostiene con selección, socialización, el ejemplo de quienes dirigen y reglas y sistemas coherentes con lo que se dice. Cuando la evaluación y los incentivos premian otra cosa, las personas aprenden que el valor declarado no es el que cuenta. Mejorar la selección, la inducción o la difusión no corrige la señal que envía el sistema de incentivos."
+},
+{
+"q": "Según el curso, ¿qué mostraron las investigaciones de los accidentes del Challenger y de Chernóbil?",
+"opts": [
+"Que surgieron de fallas organizacionales acumuladas, no solo de errores de operadores.",
+"Que se explican por operadores con formación insuficiente para tecnologías complejas.",
+"Que se debieron a fallas de diseño que la organización no tenía cómo detectar a tiempo.",
+"Que la falta de procedimientos escritos impidió a los equipos responder a la emergencia."
+],
+"ans": 0,
+"fb": "Los investigadores concluyeron que esas catástrofes no se explicaban solo por la conducta de los operadores, sino por una acumulación de deficiencias en la organización y por maneras de hacer y pensar incompatibles con operar de forma segura. De ahí surge el concepto de cultura de seguridad. Atribuirlas a la formación de los operadores, a fallas técnicas imprevisibles o a la falta de procedimientos reduce el problema a una causa puntual y deja intacta la cultura que lo hizo posible."
+},
+{
+"q": "Según Schein (2010) y Kotter y Heskett (1992), ¿qué exige cambiar la cultura de una organización?",
+"opts": [
+"Reescribir la misión y los valores, y difundirlos mediante un plan de comunicación interna.",
+"Renovar a gran parte del personal, porque los supuestos de las personas no se modifican.",
+"Desafiar los supuestos básicos, con visión clara, liderazgo fuerte y participación colectiva.",
+"Esperar a que madure la nueva estrategia, porque la cultura se ajusta a ella con el tiempo."
+],
+"ans": 2,
+"fb": "La cultura actúa como una fuerza inercial, pero puede transformarse. Hacerlo implica desafiar los supuestos básicos y requiere visión clara, liderazgo fuerte y participación colectiva (Schein, 2010; Kotter & Heskett, 1992). Reescribir la misión cambia el nivel declarado, no los supuestos. Renovar al personal parte de la idea errada de que las personas no cambian. Esperar que la cultura se ajuste sola ignora que suele resistir la nueva estrategia."
+},
+{
+"q": "Dos empresas se fusionan y, pese a sinergias evidentes, sus equipos no logran trabajar juntos. Según el curso, ¿qué explicación es más probable?",
+"opts": [
+"La nueva estructura tiene más niveles jerárquicos de los que la operación necesita.",
+"Sus culturas chocan, porque cada una trae supuestos y prácticas distintos y arraigados.",
+"La estrategia de la fusión no definió con suficiente claridad los objetivos financieros.",
+"Las personas desconocen el organigrama y los procedimientos de la nueva organización."
+],
+"ans": 1,
+"fb": "El curso presenta la cultura como ventaja o como barrera, y uno de los casos de barrera es el choque cultural en fusiones y adquisiciones (Schein, 2010). Cada empresa trae supuestos y formas de hacer que sus integrantes no cuestionan. La estructura, los objetivos financieros o el desconocimiento de procedimientos pueden sumar dificultades, pero se corrigen con medidas formales y no explican que las sinergias evidentes no se materialicen."
+},
+{
+"q": "Según el curso, ¿por dónde se practica principalmente la cultura de una organización?",
+"opts": [
+"Por la declaración de valores que la dirección revisa y publica cada año.",
+"Por las actividades de integración y celebración que organiza la empresa.",
+"Por la imagen corporativa, el logo y el lenguaje institucional compartido.",
+"Por los procesos, que fijan prioridades y decisiones repetibles."
+],
+"ans": 3,
+"fb": "El curso afirma que la cultura no se declara, se practica, y que se practica principalmente a través de los procesos. Las organizaciones que crecen de forma sostenible dependen de decisiones repetibles, prioridades claras y procesos que guían el trabajo diario. La declaración de valores, los rituales y los símbolos expresan la cultura, pero no bastan si los procesos permiten el desorden o la improvisación."
+}
+];
+let cur=0,score=0,answered=[];
+function render(){
+  const q=Qs[cur];
+  document.getElementById('prog').style.width=Math.round((cur/Qs.length)*100)+'%';
+  let h=`<div class="card"><div class="qnum">Pregunta ${cur+1} de ${Qs.length}</div><div class="qtext">${q.q}</div>`;
+  q.opts.forEach((o,i)=>{h+=`<div class="opt" id="op${i}" onclick="pick(${i})"><div class="dot" id="dot${i}"></div><span>${o}</span></div>`;});
+  h+=`<div class="fb" id="fb"></div></div>`;
+  document.getElementById('qbody').innerHTML=h;
+  document.getElementById('btnr').style.display='none';
+}
+function pick(i){
+  const q=Qs[cur];
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=null);
+  const ok=i===q.ans;
+  document.getElementById('op'+i).classList.add(ok?'correct':'wrong');
+  document.getElementById('dot'+i).textContent=ok?'✓':'✗';
+  if(!ok){document.getElementById('op'+q.ans).classList.add('correct');document.getElementById('dot'+q.ans).textContent='✓';}
+  const fb=document.getElementById('fb');
+  fb.textContent=q.fb;fb.className='fb show '+(ok?'ok':'ko');
+  if(ok)score++;
+  answered.push({q:q.q,ok});cur++;
+  if(cur<Qs.length){
+    const b=document.createElement('button');b.className='btn-next show';b.textContent='Siguiente →';b.onclick=render;
+    document.querySelector('.card').appendChild(b);
+  } else {document.getElementById('btnr').style.display='block';}
+}
+function showResult(){
+  document.getElementById('qbody').innerHTML='';document.getElementById('btnr').style.display='none';
+  document.getElementById('reswrap').style.display='block';
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('gpct').textContent=pct+'%';drawGauge(pct);
+  let label,sub,color;
+  if(pct>=87){label='Excelente dominio';sub='Comprendes sólidamente los contenidos del capítulo 2.';color='#3B6D11';}
+  else if(pct>=62){label='Buen nivel';sub='Hay algunos conceptos que vale la pena repasar.';color='#BA7517';}
+  else{label='Necesitas repasar';sub='Te recomendamos repasar las láminas del capítulo 2 antes de continuar.';color='#A32D2D';}
+  const rl=document.getElementById('rlabel');rl.textContent=label;rl.style.color=color;
+  document.getElementById('rsub').textContent=sub;
+  document.getElementById('review').innerHTML=answered.map((a,i)=>
+    `<div class="ri"><div class="ri-q">${i+1}. ${a.q}</div><div class="${a.ok?'rok':'rko'}">${a.ok?'✓ Correcta':'✗ Incorrecta'}</div></div>`).join('');
+}
+function drawGauge(pct){
+  const c=document.getElementById('gauge'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,220,120);
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,2*Math.PI);ctx.strokeStyle='#E0E0E0';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+  const color=pct>=87?'#3B6D11':pct>=62?'#BA7517':'#A32D2D';
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,Math.PI+(pct/100)*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+}
+function restart(){cur=0;score=0;answered=[];document.getElementById('reswrap').style.display='none';render();}
+document.getElementById('btnr').onclick=showResult;
+render();
+</script>
+</body>
+</html>
