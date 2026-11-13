@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación Capítulo 4 · Módulo 1 DGIC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.logo{display:inline-block;background:#C00000;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:12px;letter-spacing:.05em}
+.pb{height:5px;background:#E0E0E0;border-radius:3px;margin-bottom:1.5rem}
+.pf{height:5px;background:#185FA5;border-radius:3px;transition:width .3s}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.qnum{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:1rem;color:#1A1A1A}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid #E0E0E0;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;line-height:1.45;color:#1A1A1A;transition:border-color .15s,background .15s}
+.opt:hover{background:#F0F7FF;border-color:#185FA5}
+.opt.correct{border-color:#3B6D11;background:#EAF3DE;color:#27500A}
+.opt.wrong{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #CCC;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.opt.correct .dot{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.opt.wrong .dot{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.fb{font-size:13px;padding:10px 12px;border-radius:8px;margin-top:10px;line-height:1.55;display:none}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#1E4D08;border:1px solid #7BBF5A}
+.fb.ko{background:#FCEBEB;color:#791F1F;border:1px solid #E08080}
+.btn-next{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#185FA5;color:#fff;border:none;font-size:15px;font-weight:500;cursor:pointer;display:none}
+.btn-next.show{display:block}
+.btn-result{width:100%;padding:14px;margin-top:1.5rem;border-radius:8px;background:#C00000;color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;display:none}
+.btn-result.show{display:block}
+.result{display:none;text-align:center;padding:.5rem 0}
+.result.show{display:block}
+.gauge-wrap{position:relative;width:220px;height:120px;margin:0 auto 1rem}
+canvas{display:block}
+.gauge-pct{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#1A1A1A}
+.result-label{font-size:18px;font-weight:600;margin-bottom:6px}
+.result-sub{font-size:14px;color:#555;margin-bottom:1.5rem;line-height:1.5}
+.ri{text-align:left;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ri-q{font-weight:500;margin-bottom:4px;line-height:1.4;color:#1A1A1A}
+.rok{color:#27500A;font-weight:500}.rko{color:#791F1F;font-weight:500}
+.btn-retry{width:100%;padding:12px;margin-top:1rem;border-radius:8px;background:#fff;color:#1A1A1A;border:1.5px solid #CCC;font-size:14px;cursor:pointer}
+.footer{text-align:center;margin-top:2rem;font-size:11px;color:#AAA}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+  <div class="logo">DGIC · MÓDULO 1</div>
+  <h1>Autoevaluación · Capítulo 4</h1>
+  <p>Gestión de riesgos y oportunidades · 8 preguntas</p>
+</div>
+<div class="pb"><div class="pf" id="prog" style="width:0%"></div></div>
+<div id="qbody"></div>
+<button class="btn-result" id="btnr">Ver mi resultado</button>
+<div class="result" id="reswrap">
+  <div class="gauge-wrap"><canvas id="gauge" width="220" height="120"></canvas><div class="gauge-pct" id="gpct"></div></div>
+  <div class="result-label" id="rlabel"></div>
+  <div class="result-sub" id="rsub"></div>
+  <div id="review"></div>
+  <button class="btn-retry" onclick="restart()">Intentar de nuevo</button>
+</div>
+<div class="footer">Diploma en Gestión Integrada de Calidad, Seguridad y Medio Ambiente · FEN · Universidad de Chile</div>
+</div>
+<script>
+const Qs=[
+{
+"q": "Según la definición que usa el curso, ¿qué es un riesgo?",
+"opts": [
+"La probabilidad de que ocurra un accidente o una pérdida durante la operación.",
+"Un peligro presente en el lugar de trabajo que puede causar daño a las personas.",
+"El efecto de la incertidumbre sobre los objetivos, que puede ser negativo o positivo.",
+"Una amenaza externa que la organización no puede controlar ni anticipar."
+],
+"ans": 2,
+"fb": "El curso adopta la definición de ISO 31000: el riesgo es el efecto de la incertidumbre sobre los objetivos, y ese efecto puede ser negativo, una amenaza, o positivo, una oportunidad. La probabilidad es uno de los componentes que se analizan, no el riesgo mismo. Un peligro es una fuente de daño, concepto propio de la seguridad laboral. Reducir el riesgo a amenazas externas deja fuera los riesgos internos y las oportunidades."
+},
+{
+"q": "En el proceso de gestión del riesgo, ¿qué pregunta corresponde a la etapa de valoración?",
+"opts": [
+"¿Es aceptable o requiere acción, y qué se atiende primero?",
+"¿Qué puede pasar, dónde y por qué razón puede ocurrir?",
+"¿Con qué probabilidad puede ocurrir y con qué consecuencia?",
+"¿Qué acción se tomará, quién la ejecuta y en qué plazo?"
+],
+"ans": 0,
+"fb": "El proceso visto en el curso recorre identificación, análisis, valoración y tratamiento, con comunicación, seguimiento y registro en todas las etapas. La valoración compara el resultado del análisis con los criterios de aceptación y decide si el riesgo es aceptable o requiere acción, y en qué orden. Qué puede pasar y por qué es identificación; probabilidad y consecuencia es análisis; qué acción, quién y cuándo es tratamiento."
+},
+{
+"q": "Una empresa contrata un seguro contra incendio para su bodega. ¿Qué tratamiento del riesgo aplica, según el curso?",
+"opts": [
+"Reducir, porque baja la consecuencia que tendría un incendio.",
+"Evitar, porque deja de exponerse a las pérdidas del incendio.",
+"Aceptar, porque asume el riesgo y lo vigila mediante la póliza.",
+"Compartir, porque traspasa a un tercero parte del riesgo."
+],
+"ans": 3,
+"fb": "El curso pone los seguros como ejemplo de compartir: una parte del riesgo, la financiera, se traspasa a un tercero. La probabilidad de incendio no cambia y la bodega se puede quemar igual, por eso no es reducir, que exige controles sobre la probabilidad o la consecuencia física. Tampoco es evitar, que implica dejar la actividad, ni aceptar, que significa asumir el riesgo sin traspasarlo."
+},
+{
+"q": "Un riesgo de baja probabilidad y consecuencia menor costaría más tratarlo que tolerarlo. ¿Qué decisión es coherente con lo visto en el curso?",
+"opts": [
+"Reducirlo con controles, porque todo riesgo identificado debe tratarse.",
+"Aceptarlo de forma informada y mantenerlo en seguimiento.",
+"Evitarlo, abandonando la actividad que lo genera para eliminarlo.",
+"Sacarlo del registro, porque su nivel no justifica documentarlo."
+],
+"ans": 1,
+"fb": "El curso indica que aceptar es asumir el riesgo de forma informada y vigilarlo, y pone como ejemplo un riesgo bajo que cuesta más tratar que tolerar. El esfuerzo debe ser proporcional a lo que está en juego, por eso no corresponde tratar cada riesgo con controles ni abandonar la actividad. Aceptar no es olvidar: el riesgo sigue registrado y en seguimiento, porque puede cambiar."
+},
+{
+"q": "Una organización evalúa abrir un turno nuevo que atendería a más clientes. Desde la gestión de riesgos y oportunidades, ¿qué corresponde?",
+"opts": [
+"Tratarla fuera de la gestión de riesgos, porque una oportunidad es tema comercial.",
+"Evitar el turno, porque una actividad nueva introduce riesgos de fatiga y error.",
+"Aceptarla sin análisis, porque una oportunidad no puede producir pérdidas.",
+"Aprovechar la oportunidad y gestionar a la vez los riesgos que el turno abre."
+],
+"ans": 3,
+"fb": "El curso insiste en que riesgo y oportunidad se gestionan juntos, porque la misma decisión puede abrir ambos. Aprovechar significa actuar para ampliar el valor que se entrega, y el turno nuevo es el ejemplo del curso. Separar la oportunidad de los riesgos repite la fragmentación que el enfoque integrado busca evitar. Evitar el turno renuncia al valor sin evaluar si los riesgos se pueden controlar, y aceptarlo sin análisis ignora la fatiga y los errores que puede traer."
+},
+{
+"q": "Antes de cambiar de proveedor, un equipo prueba una partida pequeña de sus insumos. ¿En qué nivel trata el riesgo la organización?",
+"opts": [
+"En la dirección, al cruzar el entorno con sus capacidades y fijar objetivos.",
+"En la operación diaria, al analizar un cambio antes de aplicarlo.",
+"En el ordenamiento del trabajo, al escribir un procedimiento de compras.",
+"En la continuidad del negocio, al preparar la respuesta ante una crisis."
+],
+"ans": 1,
+"fb": "El curso distingue tres niveles: cuando la organización decide hacia dónde va, cuando ordena su trabajo y cuando opera día a día. Probar una partida pequeña antes de cambiar de proveedor es el ejemplo del curso para la operación diaria: revisar la tarea o el cambio antes de aplicarlo. Fijar objetivos corresponde a la dirección, y escribir un procedimiento al ordenamiento del trabajo. La continuidad se ocupa de mantener la operación ante una interrupción."
+},
+{
+"q": "Según el curso, ¿qué significa implementar una acción de tratamiento del riesgo?",
+"opts": [
+"Llevarla a un proceso, con dueño, plazo, recursos y un indicador de eficacia.",
+"Registrarla en la matriz de riesgos y obtener su aprobación en el comité.",
+"Comunicarla a los trabajadores expuestos mediante una charla de inducción.",
+"Incluirla en el presupuesto anual del área que es responsable del riesgo."
+],
+"ans": 0,
+"fb": "El curso define implementar como llevar cada acción a un proceso, con dueño, plazo, recursos y un indicador que muestre si funcionó. Registrar, aprobar, comunicar o presupuestar son pasos útiles, pero ninguno asegura por sí solo que la acción se ejecute y que se sepa si fue eficaz. La pregunta que el curso propone ante cualquier práctica es qué riesgo controla, y eso solo se responde si la acción vive en un proceso."
+},
+{
+"q": "Un ciberataque detiene la facturación de una empresa durante tres días. Según el curso, ¿qué perspectiva de gestión cuida principalmente ese efecto?",
+"opts": [
+"La calidad, porque los clientes recibirán sus facturas con errores o atraso.",
+"La seguridad y salud, porque el ataque altera las condiciones de trabajo.",
+"La continuidad, que busca seguir entregando lo prometido aun en una crisis.",
+"La gestión del cambio, porque el ataque obliga a modificar los sistemas."
+],
+"ans": 2,
+"fb": "El curso muestra que cada sistema cuida algo distinto en los mismos procesos, y usa este ejemplo para la continuidad: que la organización siga entregando lo que promete aunque ocurra una crisis. La calidad cuida que lo entregado cumpla lo prometido en condiciones normales, y la seguridad y salud cuida lo que puede lesionar o enfermar a las personas. La gestión del cambio puede intervenir después, pero no es lo que se protege en la interrupción."
+}
+];
+let cur=0,score=0,answered=[];
+function render(){
+  const q=Qs[cur];
+  document.getElementById('prog').style.width=Math.round((cur/Qs.length)*100)+'%';
+  let h=`<div class="card"><div class="qnum">Pregunta ${cur+1} de ${Qs.length}</div><div class="qtext">${q.q}</div>`;
+  q.opts.forEach((o,i)=>{h+=`<div class="opt" id="op${i}" onclick="pick(${i})"><div class="dot" id="dot${i}"></div><span>${o}</span></div>`;});
+  h+=`<div class="fb" id="fb"></div></div>`;
+  document.getElementById('qbody').innerHTML=h;
+  document.getElementById('btnr').style.display='none';
+}
+function pick(i){
+  const q=Qs[cur];
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=null);
+  const ok=i===q.ans;
+  document.getElementById('op'+i).classList.add(ok?'correct':'wrong');
+  document.getElementById('dot'+i).textContent=ok?'✓':'✗';
+  if(!ok){document.getElementById('op'+q.ans).classList.add('correct');document.getElementById('dot'+q.ans).textContent='✓';}
+  const fb=document.getElementById('fb');
+  fb.textContent=q.fb;fb.className='fb show '+(ok?'ok':'ko');
+  if(ok)score++;
+  answered.push({q:q.q,ok});cur++;
+  if(cur<Qs.length){
+    const b=document.createElement('button');b.className='btn-next show';b.textContent='Siguiente →';b.onclick=render;
+    document.querySelector('.card').appendChild(b);
+  } else {document.getElementById('btnr').style.display='block';}
+}
+function showResult(){
+  document.getElementById('qbody').innerHTML='';document.getElementById('btnr').style.display='none';
+  document.getElementById('reswrap').style.display='block';
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('gpct').textContent=pct+'%';drawGauge(pct);
+  let label,sub,color;
+  if(pct>=87){label='Excelente dominio';sub='Comprendes sólidamente los contenidos del capítulo 4.';color='#3B6D11';}
+  else if(pct>=62){label='Buen nivel';sub='Hay algunos conceptos que vale la pena repasar.';color='#BA7517';}
+  else{label='Necesitas repasar';sub='Te recomendamos repasar las láminas del capítulo 4 antes de continuar.';color='#A32D2D';}
+  const rl=document.getElementById('rlabel');rl.textContent=label;rl.style.color=color;
+  document.getElementById('rsub').textContent=sub;
+  document.getElementById('review').innerHTML=answered.map((a,i)=>
+    `<div class="ri"><div class="ri-q">${i+1}. ${a.q}</div><div class="${a.ok?'rok':'rko'}">${a.ok?'✓ Correcta':'✗ Incorrecta'}</div></div>`).join('');
+}
+function drawGauge(pct){
+  const c=document.getElementById('gauge'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,220,120);
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,2*Math.PI);ctx.strokeStyle='#E0E0E0';ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+  const color=pct>=87?'#3B6D11':pct>=62?'#BA7517':'#A32D2D';
+  ctx.beginPath();ctx.arc(110,110,90,Math.PI,Math.PI+(pct/100)*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=16;ctx.lineCap='round';ctx.stroke();
+}
+function restart(){cur=0;score=0;answered=[];document.getElementById('reswrap').style.display='none';render();}
+document.getElementById('btnr').onclick=showResult;
+render();
+</script>
+</body>
+</html>
